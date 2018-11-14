@@ -1,0 +1,3 @@
+rootProject.name = 'configuration-center'
+
+include 'configuration-center-core'
