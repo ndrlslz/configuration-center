@@ -25,5 +25,5 @@ case "$1" in
         docker-compose -f ${work_dir}/zookeeper.yml restart
     ;;
     *)
-        echo "Usage: ./zookeeper.sh start|stop|restart"
+        echo "Usage: ./zookeeper.sh status|start|stop|restart"
 esac
