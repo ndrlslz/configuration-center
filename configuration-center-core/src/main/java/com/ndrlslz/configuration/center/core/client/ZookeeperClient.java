@@ -28,6 +28,10 @@ public class ZookeeperClient {
         return curatorFramework.getZookeeperClient().isConnected();
     }
 
+    public void close() {
+        curatorFramework.close();
+    }
+
     public static class Builder {
         private int sessionTimeoutMs = DEFAULT_SESSION_TIMEOUT_MS;
         private int connectionTimeoutMs = DEFAULT_CONNECTION_TIMEOUT_MS;
@@ -65,6 +69,7 @@ public class ZookeeperClient {
                 curatorFramework.blockUntilConnected(FIRST_CONNECTION_TIMEOUT_S, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted Exception when connect to zookeeper.", e);
+                curatorFramework.close();
             }
 
             if (!curatorFramework.getZookeeperClient().isConnected()) {
