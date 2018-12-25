@@ -7,6 +7,8 @@ import org.apache.zookeeper.KeeperException;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -49,16 +51,16 @@ public class ZookeeperClientTest extends BaseIntegrationTest {
 
     @Test
     public void shouldCreateNodeWithEmptyValue() throws Exception {
-        zookeeperClient.createNode(PATH);
+        String node = zookeeperClient.createNode(PATH);
 
-        assertThat(zookeeperClient.getNode(PATH).getValue(), is(""));
+        assertThat(zookeeperClient.getNode(node).getValue(), is(""));
     }
 
     @Test
     public void shouldCreateNodeWithValue() throws Exception {
-        zookeeperClient.createNode(PATH, "value");
+        String path = zookeeperClient.createNode(PATH, "value");
 
-        assertThat(zookeeperClient.getNode(PATH).getValue(), is("value"));
+        assertThat(zookeeperClient.getNode(path).getValue(), is("value"));
     }
 
     @Test
@@ -87,8 +89,9 @@ public class ZookeeperClientTest extends BaseIntegrationTest {
         Node node = zookeeperClient.getNode(PATH);
         assertThat(node.getValue(), is("value"));
 
-        zookeeperClient.updateNode(PATH, "new_value", node.getVersion());
+        Node newNode = zookeeperClient.updateNode(PATH, "new_value", node.getVersion());
 
+        assertThat(newNode.getValue(), is("new_value"));
         assertThat(zookeeperClient.getNode(PATH).getValue(), is("new_value"));
     }
 
@@ -112,5 +115,35 @@ public class ZookeeperClientTest extends BaseIntegrationTest {
         zookeeperClient.deleteNode(PATH);
 
         zookeeperClient.getNode(PATH);
+    }
+
+    @Test
+    public void shouldGetChildren() throws Exception {
+        zookeeperClient.createNode(PATH);
+        zookeeperClient.createNode(PATH + "/1");
+        zookeeperClient.createNode(PATH + "/2");
+        zookeeperClient.createNode(PATH + "/3");
+
+        List<String> children = zookeeperClient.getChildren(PATH);
+        assertThat(children, hasItems("1", "2", "3"));
+    }
+
+    @Test
+    public void shouldListenNode() throws Exception {
+        List<String> result = new ArrayList<>();
+
+        zookeeperClient.listen(PATH, node -> result.add(node.getValue()));
+
+        zookeeperClient.createNode(PATH, "one");
+        TimeUnit.MILLISECONDS.sleep(10);
+        zookeeperClient.updateNode(PATH, "two", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(10);
+        zookeeperClient.updateNode(PATH, "three", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(10);
+        zookeeperClient.updateNode(PATH, "four", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(10);
+        zookeeperClient.deleteNode(PATH);
+
+        assertThat(result, hasItems("one", "two", "three", "four"));
     }
 }

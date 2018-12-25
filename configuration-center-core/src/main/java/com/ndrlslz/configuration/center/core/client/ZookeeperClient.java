@@ -1,10 +1,13 @@
 package com.ndrlslz.configuration.center.core.client;
 
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
+import com.ndrlslz.configuration.center.core.listener.NodeListener;
 import com.ndrlslz.configuration.center.core.model.Node;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.ChildData;
+import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
@@ -12,7 +15,12 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.nonNull;
 
 public class ZookeeperClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperClient.class);
@@ -22,6 +30,7 @@ public class ZookeeperClient {
     private static final int BASE_SLEEP_TIME_MS = 5000;
     private static final int MAX_RETRIES = 29;
     private static final String NAMESPACE = "configuration-center";
+    private static final ConcurrentHashMap<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
     private CuratorFramework curatorFramework;
 
     private ZookeeperClient(CuratorFramework curatorFramework) {
@@ -33,6 +42,8 @@ public class ZookeeperClient {
     }
 
     public void close() {
+        closeNodeCache();
+
         curatorFramework.close();
     }
 
@@ -85,6 +96,42 @@ public class ZookeeperClient {
         curatorFramework.delete()
                 .deletingChildrenIfNeeded()
                 .forPath(path);
+    }
+
+    public List<String> getChildren(String path) throws Exception {
+        return curatorFramework.getChildren()
+                .forPath(path);
+    }
+
+    public void listen(String path, NodeListener nodeListener) throws Exception {
+        NodeCache nodeCache = new NodeCache(curatorFramework, path);
+
+        nodeCache.getListenable().addListener(() -> {
+            ChildData currentData = nodeCache.getCurrentData();
+
+            if (nonNull(currentData)) {
+                Node node = new Node.Builder()
+                        .withStat(currentData.getStat())
+                        .withValue(new String(currentData.getData()))
+                        .build();
+
+                nodeListener.nodeChanged(node);
+            }
+        });
+
+        nodeCache.start();
+        nodeCacheMap.put(path, nodeCache);
+    }
+
+    private void closeNodeCache() {
+        nodeCacheMap.forEach((key, nodeCache) -> {
+            try {
+                nodeCache.close();
+                LOGGER.debug("Close node cache for path {}", key);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        });
     }
 
     public static class Builder {
