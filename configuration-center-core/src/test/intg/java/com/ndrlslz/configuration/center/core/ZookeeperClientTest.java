@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ZookeeperClientTest extends BaseIntegrationTest {
+public class ZookeeperClientTest extends ZookeeperClientBaseIntegrationTest {
     private static final String PATH = "/test";
 
     @Test
@@ -135,13 +135,13 @@ public class ZookeeperClientTest extends BaseIntegrationTest {
         zookeeperClient.listen(PATH, node -> result.add(node.getValue()));
 
         zookeeperClient.createNode(PATH, "one");
-        TimeUnit.MILLISECONDS.sleep(10);
+        TimeUnit.MILLISECONDS.sleep(100);
         zookeeperClient.updateNode(PATH, "two", zookeeperClient.getNode(PATH).getVersion());
-        TimeUnit.MILLISECONDS.sleep(10);
+        TimeUnit.MILLISECONDS.sleep(100);
         zookeeperClient.updateNode(PATH, "three", zookeeperClient.getNode(PATH).getVersion());
-        TimeUnit.MILLISECONDS.sleep(10);
+        TimeUnit.MILLISECONDS.sleep(100);
         zookeeperClient.updateNode(PATH, "four", zookeeperClient.getNode(PATH).getVersion());
-        TimeUnit.MILLISECONDS.sleep(10);
+        TimeUnit.MILLISECONDS.sleep(100);
         zookeeperClient.deleteNode(PATH);
 
         assertThat(result, hasItems("one", "two", "three", "four"));

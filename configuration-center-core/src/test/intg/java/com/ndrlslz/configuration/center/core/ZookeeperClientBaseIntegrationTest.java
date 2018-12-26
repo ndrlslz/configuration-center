@@ -5,7 +5,7 @@ import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Before;
 
-public abstract class BaseIntegrationTest {
+public abstract class ZookeeperClientBaseIntegrationTest {
     TestingServer testingServer;
     ZookeeperClient zookeeperClient;
 

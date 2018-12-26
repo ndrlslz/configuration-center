@@ -8,7 +8,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
-import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.retry.RetryOneTime;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.Stat;
@@ -27,8 +27,7 @@ public class ZookeeperClient {
     private static final int FIRST_CONNECTION_TIMEOUT_S = 10;
     private static final int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
     private static final int DEFAULT_CONNECTION_TIMEOUT_MS = 15 * 1000;
-    private static final int BASE_SLEEP_TIME_MS = 5000;
-    private static final int MAX_RETRIES = 29;
+    private static final int SLEEP_MS_BETWEEN_RETRY = 1000;
     private static final String NAMESPACE = "configuration-center";
     private static final ConcurrentHashMap<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
     private CuratorFramework curatorFramework;
@@ -155,8 +154,7 @@ public class ZookeeperClient {
         }
 
         public ZookeeperClient build() throws FirstConnectionTimeoutException {
-            RetryPolicy retryPolicy = new ExponentialBackoffRetry(BASE_SLEEP_TIME_MS, MAX_RETRIES);
-
+            RetryPolicy retryPolicy = new RetryOneTime(SLEEP_MS_BETWEEN_RETRY);
             CuratorFramework curatorFramework = CuratorFrameworkFactory.builder()
                     .connectString(connectionString)
                     .sessionTimeoutMs(sessionTimeoutMs)
