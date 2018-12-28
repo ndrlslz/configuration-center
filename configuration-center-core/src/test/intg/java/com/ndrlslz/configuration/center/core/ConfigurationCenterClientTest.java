@@ -10,8 +10,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -226,5 +230,55 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         configurationCenterClient.createEnvironment(CUSTOMER_API, DEV);
 
         configurationCenterClient.deleteProperty(CUSTOMER_API, DEV, "key");
+    }
+
+    @Test
+    public void shouldGetProperties() throws ConfigurationCenterException {
+        configurationCenterClient.createApplication(CUSTOMER_API);
+        configurationCenterClient.createEnvironment(CUSTOMER_API, DEV);
+        configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key1", "value1");
+        configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key2", "value2");
+        configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key3", "value3");
+        configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key4", "value4");
+
+        List<Node> nodes = configurationCenterClient.getProperties(CUSTOMER_API, DEV);
+        List<String> values = nodes.stream().map(Node::getValue).collect(toList());
+
+        assertThat(values.size(), is(4));
+        assertThat(values, hasItems("value1", "value2", "value3", "value4"));
+    }
+
+    @Test
+    public void shouldThrowNoNodeExceptionWhenGetPropertiesGivenEnvironmentNodeNotExists() throws ConfigurationCenterException {
+        expectedException.expect(ConfigurationCenterException.class);
+        expectedException.expectCause(isA(KeeperException.NoNodeException.class));
+
+        configurationCenterClient.createApplication(CUSTOMER_API);
+
+        configurationCenterClient.getProperties(CUSTOMER_API, DEV);
+    }
+
+    @Test
+    public void shouldListenProperty() throws ConfigurationCenterException, InterruptedException {
+        List<String> result = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(3);
+        configurationCenterClient.listenProperty(CUSTOMER_API, DEV, "key", node -> {
+            result.add(node.getValue());
+            latch.countDown();
+        });
+
+        configurationCenterClient.createApplication(CUSTOMER_API);
+        configurationCenterClient.createEnvironment(CUSTOMER_API, DEV);
+        configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key", "value_one");
+        TimeUnit.MILLISECONDS.sleep(100);
+        configurationCenterClient.updateProperty(CUSTOMER_API, DEV, "key", "value_two",
+                configurationCenterClient.getProperty(CUSTOMER_API, DEV, "key").getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+        configurationCenterClient.updateProperty(CUSTOMER_API, DEV, "key", "value_three",
+                configurationCenterClient.getProperty(CUSTOMER_API, DEV, "key").getVersion());
+
+        latch.await();
+        assertThat(result.size(), is(3));
+        assertThat(result, hasItems("value_one", "value_two", "value_three"));
     }
 }
