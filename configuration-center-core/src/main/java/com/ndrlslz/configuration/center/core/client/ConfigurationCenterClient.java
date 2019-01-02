@@ -87,6 +87,13 @@ public class ConfigurationCenterClient {
     }
 
     public Node getProperty(String application, String environment, String property) throws ConfigurationCenterException {
+//        AsyncResult<Node> asyncResult = async(() -> zookeeperClient.getNode(pathOf(application, environment, property)));
+//        if (asyncResult.failed()) {
+//            Exception exception = asyncResult.getException();
+//            throw new ConfigurationCenterException(exception.getMessage(), exception);
+//        }
+//        return asyncResult.getResult();
+
         try {
             return zookeeperClient.getNode(pathOf(application, environment, property));
         } catch (Exception e) {
@@ -124,6 +131,18 @@ public class ConfigurationCenterClient {
 
     //TODO: currently use sync & block method to get properties. plan to use RxJava to rewrite this function.
     public List<Node> getProperties(String application, String environment) throws ConfigurationCenterException {
+//        try {
+//            return Flowable.fromIterable(getChildren(application, environment))
+//                    .parallel()
+//                    .runOn(io())
+//                    .map(subPath -> getProperty(application, environment, subPath))
+//                    .sequential()
+//                    .collect((Callable<List<Node>>) ArrayList::new, List::add)
+//                    .blockingGet();
+//        } catch (Exception e) {
+//            throw new ConfigurationCenterException(e.getMessage(), e);
+//        }
+//
         try {
             List<String> children = zookeeperClient.getChildren(pathOf(application, environment));
             return children
