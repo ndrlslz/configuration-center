@@ -1,0 +1,124 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.2.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath('com.netflix.nebula:gradle-extra-configurations-plugin:3.0.3')
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'nebula.optional-base'
+apply plugin: "jacoco"
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Edgware.RELEASE'
+    }
+}
+
+dependencies {
+    compile project(':configuration-center-core')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-hateoas")
+    compile('io.springfox:springfox-swagger2:2.7.0')
+    compile('io.springfox:springfox-swagger-ui:2.7.0')
+
+    testCompile 'io.rest-assured:rest-assured:3.0.6'
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+afterEvaluate {
+    idea {
+        module {
+            testSourceDirs = testSourceDirs + sourceSets.integrationTest.allSource.srcDirs.flatten() as LinkedHashSet
+            outputDir = new File("${buildDir}/classes/idea/main")
+            testOutputDir = new File("${buildDir}/classes/idea/test")
+        }
+    }
+}
+
+sourceSets {
+    test {
+        java {
+            srcDir 'src/test/unit/java'
+        }
+        resources {
+            srcDir 'src/test/unit/resources'
+        }
+    }
+
+    integrationTest {
+        java {
+            srcDir 'src/test/intg/java'
+        }
+        resources {
+            srcDir 'src/test/intg/resources'
+        }
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+jacocoTestReport {
+    sourceSets sourceSets.main
+    executionData test, integrationTest
+
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    excludes: ['com/ndrlslz/configuration/center/core/model',
+                               'com/ndrlslz/configuration/center/core/exception',
+                               'spike']
+            )
+        })
+    }
+}
+
+jacocoTestCoverageVerification {
+    sourceSets sourceSets.main
+    executionData test, integrationTest
+
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    excludes: ['com/ndrlslz/configuration/center/core/model',
+                               'com/ndrlslz/configuration/center/core/exception',
+                               'spike']
+            )
+        })
+    }
+
+    violationRules {
+        rule {
+            limit {
+                counter = 'BRANCH'
+                minimum = 0.90
+            }
+
+            limit {
+                counter = 'LINE'
+                minimum = 0.90
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+jacocoTestCoverageVerification.dependsOn jacocoTestReport
+
+check.dependsOn integrationTest
