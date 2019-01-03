@@ -4,6 +4,7 @@ import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.core.model.Node;
+import com.ndrlslz.configuration.center.core.model.Pagination;
 import org.apache.zookeeper.KeeperException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,7 +39,12 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
     public void shouldCreateApplicationNode() throws ConfigurationCenterException {
         configurationCenterClient.createApplication(CUSTOMER_API);
 
-        List<String> applications = configurationCenterClient.getApplications();
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        List<String> applications = configurationCenterClient.getApplications(pagination).getContent();
 
         assertThat(applications.size(), is(1));
         assertThat(applications, hasItem(CUSTOMER_API));
@@ -59,10 +65,44 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         configurationCenterClient.createApplication("product-api");
         configurationCenterClient.createApplication("order-api");
 
-        List<String> applications = configurationCenterClient.getApplications();
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        List<String> applications = configurationCenterClient.getApplications(pagination).getContent();
 
         assertThat(applications.size(), is(3));
         assertThat(applications, hasItems("customer-api", "product-api", "order-api"));
+    }
+
+    @Test
+    public void shouldGetApplicationsByPagination() throws ConfigurationCenterException {
+        configurationCenterClient.createApplication("customer-api");
+        configurationCenterClient.createApplication("product-api");
+        configurationCenterClient.createApplication("order-api");
+        configurationCenterClient.createApplication("address-api");
+        configurationCenterClient.createApplication("contract-api");
+
+        Pagination firstPage = new Pagination.Builder()
+                .withSize(2)
+                .withNumber(0)
+                .build();
+
+        List<String> applications = configurationCenterClient.getApplications(firstPage).getContent();
+
+        assertThat(applications.size(), is(2));
+        assertThat(applications, hasItems("customer-api", "product-api"));
+
+        Pagination secondPage = new Pagination.Builder()
+                .withSize(2)
+                .withNumber(1)
+                .build();
+
+        List<String> secondApplications = configurationCenterClient.getApplications(secondPage).getContent();
+
+        assertThat(secondApplications.size(), is(2));
+        assertThat(secondApplications, hasItems("order-api", "address-api"));
     }
 
     @Test
@@ -71,7 +111,12 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         expectedException.expectCause(isA(KeeperException.ConnectionLossException.class));
 
         testingServer.close();
-        configurationCenterClient.getApplications();
+
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+        configurationCenterClient.getApplications(pagination);
     }
 
     @Test
@@ -81,7 +126,12 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         configurationCenterClient.createApplication("order-api");
         configurationCenterClient.deleteApplication("customer-api");
 
-        List<String> applications = configurationCenterClient.getApplications();
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        List<String> applications = configurationCenterClient.getApplications(pagination).getContent();
 
         assertThat(applications.size(), is(2));
         assertThat(applications, hasItems("product-api", "order-api"));
@@ -167,6 +217,7 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
 
         Node node = configurationCenterClient.getProperty(CUSTOMER_API, DEV, "key");
 
+        assertThat(node.getName(), is("key"));
         assertThat(node.getValue(), is("value"));
     }
 
@@ -243,9 +294,11 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
 
         List<Node> nodes = configurationCenterClient.getProperties(CUSTOMER_API, DEV);
         List<String> values = nodes.stream().map(Node::getValue).collect(toList());
+        List<String> names = nodes.stream().map(Node::getName).collect(toList());
 
         assertThat(values.size(), is(4));
         assertThat(values, hasItems("value1", "value2", "value3", "value4"));
+        assertThat(names, hasItems("key1", "key2", "key3", "key4"));
     }
 
     @Test

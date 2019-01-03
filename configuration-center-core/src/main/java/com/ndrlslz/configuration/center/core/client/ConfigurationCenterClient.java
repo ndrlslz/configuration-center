@@ -4,6 +4,8 @@ import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterExcept
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.core.listener.NodeListener;
 import com.ndrlslz.configuration.center.core.model.Node;
+import com.ndrlslz.configuration.center.core.model.Page;
+import com.ndrlslz.configuration.center.core.model.Pagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,11 +52,22 @@ public class ConfigurationCenterClient {
         }
     }
 
-    public List<String> getApplications() throws ConfigurationCenterException {
+    public Page<String> getApplications(Pagination pagination) throws ConfigurationCenterException {
+        Pagination.check(pagination);
+        long pageNumber = pagination.getNumber();
+        long pageSize = pagination.getSize();
+
         try {
-            return zookeeperClient.getChildren(pathOfRoot());
+            List<String> children = zookeeperClient.getChildren(pathOfRoot());
+            long totalElements = children.size();
+            long totalPages = (long) (Math.ceil(totalElements / pageSize) + 1);
+
+            List<String> subList = children.stream()
+                    .limit(pageNumber * pageSize + pageSize)
+                    .skip(pageNumber * pageSize)
+                    .collect(toList());
+            return new Page<>(subList, pagination, totalElements, totalPages);
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
             throw new ConfigurationCenterException(e.getMessage(), e);
         }
     }
@@ -95,7 +108,9 @@ public class ConfigurationCenterClient {
 //        return asyncResult.getResult();
 
         try {
-            return zookeeperClient.getNode(pathOf(application, environment, property));
+            Node node = zookeeperClient.getNode(pathOf(application, environment, property));
+            node.setName(property);
+            return node;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new ConfigurationCenterException(e.getMessage(), e);
@@ -180,12 +195,12 @@ public class ConfigurationCenterClient {
             return this;
         }
 
-        public Builder sessionTimeoutMs(int sessionTimeoutMs) {
+        public Builder sessionTimeoutMs(Integer sessionTimeoutMs) {
             this.sessionTimeoutMs = sessionTimeoutMs;
             return this;
         }
 
-        public Builder connectionTimeoutMs(int connectionTimeoutMs) {
+        public Builder connectionTimeoutMs(Integer connectionTimeoutMs) {
             this.connectionTimeoutMs = connectionTimeoutMs;
             return this;
         }

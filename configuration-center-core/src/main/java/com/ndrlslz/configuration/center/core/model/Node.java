@@ -3,6 +3,7 @@ package com.ndrlslz.configuration.center.core.model;
 import org.apache.zookeeper.data.Stat;
 
 public class Node {
+    private String name;
     private String value;
     private long czxid;
     private long mzxid;
@@ -29,6 +30,14 @@ public class Node {
         this.dataLength = builder.stat.getDataLength();
         this.numChildren = builder.stat.getNumChildren();
         this.pzxid = builder.stat.getPzxid();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getValue() {
@@ -77,24 +86,6 @@ public class Node {
 
     public long getPzxid() {
         return pzxid;
-    }
-
-    @Override
-    public String toString() {
-        return "Node{" +
-                "value='" + value + '\'' +
-                ", czxid=" + czxid +
-                ", mzxid=" + mzxid +
-                ", ctime=" + ctime +
-                ", mtime=" + mtime +
-                ", version=" + version +
-                ", cversion=" + cversion +
-                ", aversion=" + aversion +
-                ", ephemeralOwner=" + ephemeralOwner +
-                ", dataLength=" + dataLength +
-                ", numChildren=" + numChildren +
-                ", pzxid=" + pzxid +
-                '}';
     }
 
     public static class Builder {
