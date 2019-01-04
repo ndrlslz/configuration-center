@@ -4,8 +4,7 @@ import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterExcept
 import org.junit.Test;
 
 import static io.restassured.RestAssured.when;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 
 public class ConfigurationCenterControllerIntegrationTest extends ControllerTestBase {
 
@@ -19,7 +18,16 @@ public class ConfigurationCenterControllerIntegrationTest extends ControllerTest
                 .get("/applications")
                 .then()
                 .statusCode(200)
+                .body("links.find { it.ref = 'self' }.href", is(baseURI + "/applications?size=10&page=0"))
+                .body("metadata.totalElements", is(3))
+                .body("metadata.totalPages", is(1))
                 .body("data.size()", is(3))
-                .body("data.attributes.name", hasItems("customer-api", "product-api", "order-api"));
+                .body("data.type", hasItem("APPLICATION"))
+                .body("data.attributes.name", hasItems("customer-api", "product-api", "order-api"))
+                .body("data.relationships.environments", hasItems(
+                        "/applications/customer-api/environments",
+                        "/applications/product-api/environments",
+                        "/applications/order-api/environments"));
+
     }
 }

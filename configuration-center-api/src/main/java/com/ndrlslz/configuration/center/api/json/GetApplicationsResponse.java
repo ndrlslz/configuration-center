@@ -14,6 +14,10 @@ public class GetApplicationsResponse {
     @ApiModelProperty(value = "Applications Information", required = true, position = 1)
     private List<Data> data;
 
+    private List<Link> links;
+
+    private Metadata metadata;
+
     public List<Data> getData() {
         return data;
     }
@@ -22,4 +26,19 @@ public class GetApplicationsResponse {
         this.data = data;
     }
 
+    public List<Link> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<Link> links) {
+        this.links = links;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
+    }
 }

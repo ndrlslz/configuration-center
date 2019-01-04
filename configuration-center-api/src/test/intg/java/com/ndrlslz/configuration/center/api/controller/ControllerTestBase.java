@@ -30,9 +30,12 @@ public class ControllerTestBase implements InitializingBean {
     @LocalServerPort
     private String port;
 
+    String baseURI;
+
     @Override
     public void afterPropertiesSet() {
-        RestAssured.baseURI = format("http://localhost:%s/", port);
+        baseURI = format("http://localhost:%s", port);
+        RestAssured.baseURI = baseURI;
     }
 
     @BeforeClass
