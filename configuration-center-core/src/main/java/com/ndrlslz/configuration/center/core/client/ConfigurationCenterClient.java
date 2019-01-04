@@ -52,6 +52,7 @@ public class ConfigurationCenterClient {
         }
     }
 
+    //TODO refactor this
     public Page<String> getApplications(Pagination pagination) throws ConfigurationCenterException {
         Pagination.check(pagination);
         long pageNumber = pagination.getNumber();
