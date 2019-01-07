@@ -19,6 +19,8 @@ public class ConfigurationCenterControllerIntegrationTest extends ControllerTest
                 .then()
                 .statusCode(200)
                 .body("links.find { it.ref = 'self' }.href", is(baseURI + "/applications?size=10&page=0"))
+                .body("links.find { it.ref = 'first' }.href", is(baseURI + "/applications?size=10&page=0"))
+                .body("links.find { it.ref = 'last' }.href", is(baseURI + "/applications?size=10&page=0"))
                 .body("metadata.totalElements", is(3))
                 .body("metadata.totalPages", is(1))
                 .body("data.size()", is(3))

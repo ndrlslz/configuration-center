@@ -4,30 +4,73 @@ import java.util.List;
 
 public class Page<T> {
     private List<T> content;
-    private Pagination pagination;
-    private long totalElements;
-    private long totalPages;
+    private int size;
+    private int number;
+    private int totalElements;
+    private int totalPages;
 
-    public Page(List<T> content, Pagination pagination, long totalElements, long totalPages) {
-        this.content = content;
-        this.pagination = pagination;
-        this.totalElements = totalElements;
-        this.totalPages = totalPages;
+    private Page(Builder<T> pageBuilder) {
+        this.content = pageBuilder.content;
+        this.size = pageBuilder.size;
+        this.number = pageBuilder.number;
+        this.totalElements = pageBuilder.totalElements;
+        this.totalPages = pageBuilder.totalPages;
     }
 
     public List<T> getContent() {
         return content;
     }
 
-    public Pagination getPagination() {
-        return pagination;
+    public int getSize() {
+        return size;
     }
 
-    public long getTotalElements() {
+    public int getNumber() {
+        return number;
+    }
+
+    public int getTotalElements() {
         return totalElements;
     }
 
-    public long getTotalPages() {
+    public int getTotalPages() {
         return totalPages;
+    }
+
+    public static class Builder<T> {
+        private List<T> content;
+        private int size;
+        private int number;
+        private int totalElements;
+        private int totalPages;
+
+        public Builder<T> withContent(List<T> content) {
+            this.content = content;
+            return this;
+        }
+
+        public Builder<T> withSize(int size) {
+            this.size = size;
+            return this;
+        }
+
+        public Builder<T> withNumber(int number) {
+            this.number = number;
+            return this;
+        }
+
+        public Builder<T> withTotalElements(int totalElements) {
+            this.totalElements = totalElements;
+            return this;
+        }
+
+        public Builder<T> withTotalPages(int totalPages) {
+            this.totalPages = totalPages;
+            return this;
+        }
+
+        public Page<T> build() {
+            return new Page<>(this);
+        }
     }
 }

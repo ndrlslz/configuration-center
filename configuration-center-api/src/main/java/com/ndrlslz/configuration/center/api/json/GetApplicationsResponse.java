@@ -3,6 +3,7 @@ package com.ndrlslz.configuration.center.api.json;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ndrlslz.configuration.center.api.model.Application;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
@@ -12,17 +13,17 @@ import java.util.List;
 public class GetApplicationsResponse {
     @JsonProperty("data")
     @ApiModelProperty(value = "Applications Information", required = true, position = 1)
-    private List<Data> data;
+    private List<Data<Application>> data;
 
     private List<Link> links;
 
     private Metadata metadata;
 
-    public List<Data> getData() {
+    public List<Data<Application>> getData() {
         return data;
     }
 
-    public void setData(List<Data> data) {
+    public void setData(List<Data<Application>> data) {
         this.data = data;
     }
 

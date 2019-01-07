@@ -4,6 +4,7 @@ import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.core.model.Node;
+import com.ndrlslz.configuration.center.core.model.Page;
 import com.ndrlslz.configuration.center.core.model.Pagination;
 import org.apache.zookeeper.KeeperException;
 import org.junit.Rule;
@@ -89,8 +90,11 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
                 .withNumber(0)
                 .build();
 
-        List<String> applications = configurationCenterClient.getApplications(firstPage).getContent();
+        Page<String> applicationsPage = configurationCenterClient.getApplications(firstPage);
+        List<String> applications = applicationsPage.getContent();
 
+        assertThat(applicationsPage.getTotalPages(), is(3));
+        assertThat(applicationsPage.getTotalElements(), is(5));
         assertThat(applications.size(), is(2));
         assertThat(applications, hasItems("customer-api", "product-api"));
 

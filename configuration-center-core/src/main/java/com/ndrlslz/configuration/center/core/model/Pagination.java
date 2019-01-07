@@ -1,41 +1,40 @@
 package com.ndrlslz.configuration.center.core.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class Pagination {
-    private long size;
-    private long number;
+    private int size;
+    private int number;
 
     private Pagination(Builder builder) {
         this.size = builder.size;
         this.number = builder.number;
     }
 
-    public long getSize() {
+    public int getSize() {
         return size;
     }
 
-    public long getNumber() {
+    public int getNumber() {
         return number;
     }
 
-    public static void check(Pagination pagination) {
-        checkNotNull(pagination, "pagination cannot be null");
-        checkState(pagination.getNumber() > -1, "pagination number must not be negative!");
-        checkState(pagination.getSize() > 0, "pagination size must be positive!");
-    }
-
     public static class Builder {
-        private long size;
-        private long number;
+        private static final int DEFAULT_PAGINATION_SIZE = 10;
+        private static final int DEFAULT_PAGINATION_NUMBER = 0;
+        private int size = DEFAULT_PAGINATION_SIZE;
+        private int number = DEFAULT_PAGINATION_NUMBER;
 
-        public Builder withSize(long size) {
+        public Builder withSize(int size) {
+            checkState(size > 0, "pagination size must be positive!");
+
             this.size = size;
             return this;
         }
 
-        public Builder withNumber(long number) {
+        public Builder withNumber(int number) {
+            checkState(number > -1, "pagination number must not be negative!");
+
             this.number = number;
             return this;
         }

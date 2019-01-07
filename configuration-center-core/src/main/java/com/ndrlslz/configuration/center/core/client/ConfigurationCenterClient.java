@@ -6,6 +6,7 @@ import com.ndrlslz.configuration.center.core.listener.NodeListener;
 import com.ndrlslz.configuration.center.core.model.Node;
 import com.ndrlslz.configuration.center.core.model.Page;
 import com.ndrlslz.configuration.center.core.model.Pagination;
+import com.ndrlslz.configuration.center.core.util.PaginationHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,22 +53,10 @@ public class ConfigurationCenterClient {
         }
     }
 
-    //TODO refactor this
     public Page<String> getApplications(Pagination pagination) throws ConfigurationCenterException {
-        Pagination.check(pagination);
-        long pageNumber = pagination.getNumber();
-        long pageSize = pagination.getSize();
-
         try {
-            List<String> children = zookeeperClient.getChildren(pathOfRoot());
-            long totalElements = children.size();
-            long totalPages = (long) (Math.ceil(totalElements / pageSize) + 1);
-
-            List<String> subList = children.stream()
-                    .limit(pageNumber * pageSize + pageSize)
-                    .skip(pageNumber * pageSize)
-                    .collect(toList());
-            return new Page<>(subList, pagination, totalElements, totalPages);
+            List<String> applications = zookeeperClient.getChildren(pathOfRoot());
+            return PaginationHelper.pagination(applications, pagination);
         } catch (Exception e) {
             throw new ConfigurationCenterException(e.getMessage(), e);
         }

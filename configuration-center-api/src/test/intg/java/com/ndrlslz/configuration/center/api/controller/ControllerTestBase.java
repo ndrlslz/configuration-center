@@ -21,7 +21,7 @@ import static java.lang.String.format;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ControllerTestBase implements InitializingBean {
+public abstract class ControllerTestBase implements InitializingBean {
     private static TestingServer testingServer;
 
     @Autowired
