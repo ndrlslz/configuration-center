@@ -1,12 +1,18 @@
 package com.ndrlslz.configuration.center.api.controller;
 
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
+import io.restassured.http.ContentType;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.File;
+import java.io.IOException;
+
+import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.CoreMatchers.*;
 
-public class ConfigurationCenterControllerIntegrationTest extends ControllerTestBase {
+public class ConfigurationCenterApplicationControllerIntegrationTest extends ControllerTestBase {
 
     @Test
     public void shouldGetApplications() throws ConfigurationCenterException {
@@ -24,12 +30,40 @@ public class ConfigurationCenterControllerIntegrationTest extends ControllerTest
                 .body("metadata.totalElements", is(3))
                 .body("metadata.totalPages", is(1))
                 .body("data.size()", is(3))
-                .body("data.type", hasItem("APPLICATION"))
+                .body("data.type", hasItem("application"))
                 .body("data.attributes.name", hasItems("customer-api", "product-api", "order-api"))
                 .body("data.relationships.environments", hasItems(
                         "/applications/customer-api/environments",
                         "/applications/product-api/environments",
                         "/applications/order-api/environments"));
+    }
 
+    @Test
+    public void shouldCreateApplications() throws IOException {
+        given()
+                .accept(ContentType.JSON).
+                contentType(ContentType.JSON)
+                .body(requestFile("create_application.json"))
+                .when()
+                .post("/applications")
+                .then()
+                .statusCode(200)
+                .body("data.type", is("application"))
+                .body("data.attributes.name", is("customer-api"))
+                .body("data.relationships.environments", is("/applications/customer-api/environments"));
+
+
+        when()
+                .get("/applications")
+                .then()
+                .statusCode(200)
+                .body("data.size()", is(1))
+                .body("data.attributes.name", hasItem("customer-api"));
+    }
+
+
+
+    private File requestFile(String name) throws IOException {
+        return new ClassPathResource("request/application/" + name).getFile();
     }
 }

@@ -26,4 +26,24 @@ public class DefaultConfigurationCenterDao implements ConfigurationCenterDao {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void createApplication(String application) {
+        try {
+            configurationCenterClient.createApplication(application);
+        } catch (ConfigurationCenterException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteApplication(String application) {
+        try {
+            configurationCenterClient.deleteApplication(application);
+        } catch (ConfigurationCenterException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
 }

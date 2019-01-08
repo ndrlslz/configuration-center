@@ -1,8 +1,8 @@
 package com.ndrlslz.configuration.center.api.translator;
 
-import com.ndrlslz.configuration.center.api.json.Data;
-import com.ndrlslz.configuration.center.api.model.Application;
-import com.ndrlslz.configuration.center.api.model.Type;
+import com.ndrlslz.configuration.center.api.json.common.Data;
+import com.ndrlslz.configuration.center.api.json.application.Application;
+import com.ndrlslz.configuration.center.api.json.common.Type;
 import com.ndrlslz.configuration.center.api.util.DataBuilder;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ public class ApplicationDataTranslator extends DataTranslator<String, Applicatio
     private static final String ENVIRONMENTS_RELATIONSHIP_VALUE = "/applications/%s/environments";
 
     @Override
-    Data<Application> transform(String app) {
+    public Data<Application> transform(String app) {
         return new DataBuilder<Application>()
                 .withType(Type.APPLICATION)
                 .withAttributes(new Application(app))

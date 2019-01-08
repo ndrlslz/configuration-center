@@ -1,6 +1,6 @@
 package com.ndrlslz.configuration.center.api.translator;
 
-import com.ndrlslz.configuration.center.api.json.Data;
+import com.ndrlslz.configuration.center.api.json.common.Data;
 
 import java.util.List;
 

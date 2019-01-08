@@ -1,6 +1,6 @@
 package com.ndrlslz.configuration.center.api.util;
 
-import com.ndrlslz.configuration.center.api.json.Metadata;
+import com.ndrlslz.configuration.center.api.json.common.Metadata;
 import com.ndrlslz.configuration.center.core.model.Page;
 
 public class MetadataBuilder {

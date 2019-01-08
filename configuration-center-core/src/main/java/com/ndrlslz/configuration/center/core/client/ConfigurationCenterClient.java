@@ -3,16 +3,18 @@ package com.ndrlslz.configuration.center.core.client;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.core.listener.NodeListener;
+import com.ndrlslz.configuration.center.core.model.AsyncResult;
 import com.ndrlslz.configuration.center.core.model.Node;
 import com.ndrlslz.configuration.center.core.model.Page;
 import com.ndrlslz.configuration.center.core.model.Pagination;
-import com.ndrlslz.configuration.center.core.util.PaginationHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
 
+import static com.ndrlslz.configuration.center.core.util.AsyncHelper.async;
+import static com.ndrlslz.configuration.center.core.util.PaginationHelper.pagination;
 import static com.ndrlslz.configuration.center.core.util.PathBuilder.pathOf;
 import static com.ndrlslz.configuration.center.core.util.PathBuilder.pathOfRoot;
 import static java.util.Objects.nonNull;
@@ -54,12 +56,13 @@ public class ConfigurationCenterClient {
     }
 
     public Page<String> getApplications(Pagination pagination) throws ConfigurationCenterException {
-        try {
-            List<String> applications = zookeeperClient.getChildren(pathOfRoot());
-            return PaginationHelper.pagination(applications, pagination);
-        } catch (Exception e) {
-            throw new ConfigurationCenterException(e.getMessage(), e);
+        AsyncResult<List<String>> result = async(() -> zookeeperClient.getChildren(pathOfRoot()));
+
+        if (result.succeeded()) {
+            return pagination(result.getResult(), pagination);
         }
+
+        throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
     }
 
     public void createEnvironment(String application, String environment) throws ConfigurationCenterException {

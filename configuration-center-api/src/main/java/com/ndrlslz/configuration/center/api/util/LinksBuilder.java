@@ -1,6 +1,6 @@
 package com.ndrlslz.configuration.center.api.util;
 
-import com.ndrlslz.configuration.center.api.json.Link;
+import com.ndrlslz.configuration.center.api.json.common.Link;
 import com.ndrlslz.configuration.center.core.model.Page;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 

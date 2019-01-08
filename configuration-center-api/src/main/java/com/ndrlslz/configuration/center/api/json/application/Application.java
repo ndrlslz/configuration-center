@@ -1,7 +1,11 @@
-package com.ndrlslz.configuration.center.api.model;
+package com.ndrlslz.configuration.center.api.json.application;
 
 public class Application {
     private String name;
+
+    public Application() {
+
+    }
 
     public Application(String name) {
         this.name = name;
@@ -13,5 +17,12 @@ public class Application {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

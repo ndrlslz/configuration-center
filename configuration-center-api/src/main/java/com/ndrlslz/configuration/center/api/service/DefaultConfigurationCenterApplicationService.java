@@ -1,7 +1,11 @@
 package com.ndrlslz.configuration.center.api.service;
 
 import com.ndrlslz.configuration.center.api.dao.ConfigurationCenterDao;
-import com.ndrlslz.configuration.center.api.json.GetApplicationsResponse;
+import com.ndrlslz.configuration.center.api.json.application.Application;
+import com.ndrlslz.configuration.center.api.json.application.CreateApplicationRequest;
+import com.ndrlslz.configuration.center.api.json.application.CreateApplicationResponse;
+import com.ndrlslz.configuration.center.api.json.application.GetApplicationsResponse;
+import com.ndrlslz.configuration.center.api.json.common.Data;
 import com.ndrlslz.configuration.center.api.translator.ApplicationDataTranslator;
 import com.ndrlslz.configuration.center.api.util.LinksBuilder;
 import com.ndrlslz.configuration.center.api.util.MetadataBuilder;
@@ -13,14 +17,14 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class DefaultConfigurationCenterService implements ConfigurationCenterService {
+public class DefaultConfigurationCenterApplicationService implements ConfigurationCenterService {
     private final ConfigurationCenterDao configurationCenterDao;
 
     private final ApplicationDataTranslator applicationDataTranslator;
 
     @Autowired
-    public DefaultConfigurationCenterService(ConfigurationCenterDao dao,
-                                             ApplicationDataTranslator applicationDataTranslator) {
+    public DefaultConfigurationCenterApplicationService(ConfigurationCenterDao dao,
+                                                        ApplicationDataTranslator applicationDataTranslator) {
         this.configurationCenterDao = dao;
         this.applicationDataTranslator = applicationDataTranslator;
     }
@@ -40,5 +44,16 @@ public class DefaultConfigurationCenterService implements ConfigurationCenterSer
         getApplicationsResponse.setMetadata(new MetadataBuilder().withPage(applications).build());
 
         return getApplicationsResponse;
+    }
+
+    @Override
+    public CreateApplicationResponse createApplication(CreateApplicationRequest request) {
+        String applicationName = request.getData().getAttributes().getName();
+        configurationCenterDao.createApplication(applicationName);
+
+        Data<Application> data = applicationDataTranslator.transform(applicationName);
+        CreateApplicationResponse response = new CreateApplicationResponse();
+        response.setApplication(data);
+        return response;
     }
 }

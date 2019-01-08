@@ -5,4 +5,8 @@ import com.ndrlslz.configuration.center.core.model.Pagination;
 
 public interface ConfigurationCenterDao {
     Page<String> getApplications(Pagination pagination);
+
+    void createApplication(String application);
+
+    void deleteApplication(String application);
 }

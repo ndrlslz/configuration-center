@@ -1,6 +1,7 @@
 package com.ndrlslz.configuration.center.api.util;
 
-import com.ndrlslz.configuration.center.api.json.Data;
+import com.ndrlslz.configuration.center.api.json.common.Data;
+import com.ndrlslz.configuration.center.api.json.common.Type;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,11 +9,11 @@ import java.util.Map;
 import static java.util.Objects.isNull;
 
 public class DataBuilder<T> {
-    private Enum type;
+    private Type type;
     private T attributes;
     private Map<String, String> relationships;
 
-    public DataBuilder<T> withType(Enum type) {
+    public DataBuilder<T> withType(Type type) {
         this.type = type;
         return this;
     }
