@@ -1,10 +1,7 @@
 package com.ndrlslz.configuration.center.api.service;
 
 import com.ndrlslz.configuration.center.api.dao.ConfigurationCenterDao;
-import com.ndrlslz.configuration.center.api.json.application.Application;
-import com.ndrlslz.configuration.center.api.json.application.CreateApplicationRequest;
-import com.ndrlslz.configuration.center.api.json.application.CreateApplicationResponse;
-import com.ndrlslz.configuration.center.api.json.application.GetApplicationsResponse;
+import com.ndrlslz.configuration.center.api.json.application.*;
 import com.ndrlslz.configuration.center.api.json.common.Data;
 import com.ndrlslz.configuration.center.api.translator.ApplicationDataTranslator;
 import com.ndrlslz.configuration.center.api.util.LinksBuilder;
@@ -55,5 +52,10 @@ public class DefaultConfigurationCenterApplicationService implements Configurati
         CreateApplicationResponse response = new CreateApplicationResponse();
         response.setApplication(data);
         return response;
+    }
+
+    @Override
+    public void deleteApplication(String application) {
+        configurationCenterDao.deleteApplication(application);
     }
 }

@@ -1,5 +1,6 @@
 package com.ndrlslz.configuration.center.api.dao;
 
+import com.ndrlslz.configuration.center.api.exception.ConfigurationCenterWrapperException;
 import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
 import com.ndrlslz.configuration.center.core.model.Page;
@@ -17,13 +18,11 @@ public class DefaultConfigurationCenterDao implements ConfigurationCenterDao {
     }
 
     @Override
-    //TODO handle ConfigurationCenterException
     public Page<String> getApplications(Pagination pagination) {
         try {
             return configurationCenterClient.getApplications(pagination);
         } catch (ConfigurationCenterException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new ConfigurationCenterWrapperException(e.getMessage(), e);
         }
     }
 
@@ -32,8 +31,7 @@ public class DefaultConfigurationCenterDao implements ConfigurationCenterDao {
         try {
             configurationCenterClient.createApplication(application);
         } catch (ConfigurationCenterException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new ConfigurationCenterWrapperException(e.getMessage(), e);
         }
     }
 
@@ -42,8 +40,7 @@ public class DefaultConfigurationCenterDao implements ConfigurationCenterDao {
         try {
             configurationCenterClient.deleteApplication(application);
         } catch (ConfigurationCenterException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new ConfigurationCenterWrapperException(e.getMessage(), e);
         }
     }
 }

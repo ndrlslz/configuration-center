@@ -38,20 +38,18 @@ public class ConfigurationCenterClient {
     }
 
     public void createApplication(String application) throws ConfigurationCenterException {
-        try {
-            zookeeperClient.createNode(pathOf(application));
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
+        AsyncResult<String> result = async(() -> zookeeperClient.createNode(pathOf(application)));
+
+        if (result.failed()) {
+            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
         }
     }
 
     public void deleteApplication(String application) throws ConfigurationCenterException {
-        try {
-            zookeeperClient.deleteNode(pathOf(application));
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
+        AsyncResult result = async(() -> zookeeperClient.deleteNode(pathOf(application)));
+
+        if (result.failed()) {
+            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
         }
     }
 
@@ -66,20 +64,18 @@ public class ConfigurationCenterClient {
     }
 
     public void createEnvironment(String application, String environment) throws ConfigurationCenterException {
-        try {
-            zookeeperClient.createNode(pathOf(application, environment));
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
+        AsyncResult<String> result = async(() -> zookeeperClient.createNode(pathOf(application, environment)));
+
+        if (result.failed()) {
+            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
         }
     }
 
     public void deleteEnvironment(String application, String environment) throws ConfigurationCenterException {
-        try {
-            zookeeperClient.deleteNode(pathOf(application, environment));
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
+        AsyncResult result = async(() -> zookeeperClient.deleteNode(pathOf(application, environment)));
+
+        if (result.failed()) {
+            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
         }
     }
 

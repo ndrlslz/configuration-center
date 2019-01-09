@@ -8,4 +8,10 @@ class Validator {
             throw new InvalidRequestBodyException(message);
         }
     }
+
+    static void checkState(boolean expression, String message) {
+        if (!expression) {
+            throw new InvalidRequestBodyException(message);
+        }
+    }
 }

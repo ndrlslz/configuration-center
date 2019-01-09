@@ -10,4 +10,6 @@ public interface ConfigurationCenterService {
     GetApplicationsResponse getApplications(Pageable pageable);
 
     CreateApplicationResponse createApplication(CreateApplicationRequest request);
+
+    void deleteApplication(String application);
 }

@@ -24,19 +24,26 @@ public class ConfigurationCenterApplicationController {
         this.configurationCenterService = configurationCenterService;
     }
 
-    @GetMapping(path = "applications")
+    @GetMapping("applications")
     @ResponseStatus(OK)
     @ApiOperation("Get Applications")
     public GetApplicationsResponse getApplications(@PageableDefault Pageable pageable) {
         return configurationCenterService.getApplications(pageable);
     }
 
-    @PostMapping(path = "applications")
+    @PostMapping("applications")
     @ResponseStatus(OK)
     @ApiOperation("Create Application")
     public CreateApplicationResponse createApplication(@RequestBody CreateApplicationRequest createApplicationRequest) {
         validate(createApplicationRequest);
 
         return configurationCenterService.createApplication(createApplicationRequest);
+    }
+
+    @DeleteMapping("applications/{name}")
+    @ResponseStatus(OK)
+    @ApiOperation("Create Application")
+    public void deleteApplication(@PathVariable String name) {
+        configurationCenterService.deleteApplication(name);
     }
 }

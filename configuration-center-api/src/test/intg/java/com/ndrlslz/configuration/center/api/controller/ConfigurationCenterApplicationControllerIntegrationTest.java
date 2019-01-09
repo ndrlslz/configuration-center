@@ -41,8 +41,8 @@ public class ConfigurationCenterApplicationControllerIntegrationTest extends Con
     @Test
     public void shouldCreateApplications() throws IOException {
         given()
-                .accept(ContentType.JSON).
-                contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .contentType(ContentType.JSON)
                 .body(requestFile("create_application.json"))
                 .when()
                 .post("/applications")
@@ -52,7 +52,6 @@ public class ConfigurationCenterApplicationControllerIntegrationTest extends Con
                 .body("data.attributes.name", is("customer-api"))
                 .body("data.relationships.environments", is("/applications/customer-api/environments"));
 
-
         when()
                 .get("/applications")
                 .then()
@@ -61,7 +60,60 @@ public class ConfigurationCenterApplicationControllerIntegrationTest extends Con
                 .body("data.attributes.name", hasItem("customer-api"));
     }
 
+    @Test
+    public void shouldThrowBadRequestWhenCreateApplicationGivenWrongType() throws IOException {
+        given()
+                .accept(ContentType.JSON)
+                .contentType(ContentType.JSON)
+                .body(requestFile("create_application_with_wrong_type.json"))
+                .when()
+                .post("/applications")
+                .then()
+                .statusCode(400)
+                .body("error", is("Bad Request"))
+                .body("status", is(400))
+                .body("message", containsString("type not match"));
+    }
 
+    @Test
+    public void shouldThrowConflictWhenCreateApplicationGivenApplicationAlreadyExists() throws ConfigurationCenterException, IOException {
+        configurationCenterClient.createApplication("customer-api");
+
+        given()
+                .accept(ContentType.JSON)
+                .contentType(ContentType.JSON)
+                .body(requestFile("create_application.json"))
+                .when()
+                .post("/applications")
+                .then()
+                .statusCode(409)
+                .body("status", is(409))
+                .body("error", is("Conflict"))
+                .body("message", containsString("NodeExists"))
+                .body("exception", containsString("NodeExistsException"));
+    }
+
+    @Test
+    public void shouldDeleteApplication() throws ConfigurationCenterException {
+        configurationCenterClient.createApplication("customer-api");
+
+        when()
+                .delete("/applications/customer-api")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    public void shouldThrowNotFoundWhenDeleteApplicationGivenApplicationNotExists() {
+        when()
+                .delete("/applications/customer-api")
+                .then()
+                .statusCode(404)
+                .body("error", is("Not Found"))
+                .body("status", is(404))
+                .body("message", containsString("NoNode"))
+                .body("exception", containsString("NoNodeException"));
+    }
 
     private File requestFile(String name) throws IOException {
         return new ClassPathResource("request/application/" + name).getFile();

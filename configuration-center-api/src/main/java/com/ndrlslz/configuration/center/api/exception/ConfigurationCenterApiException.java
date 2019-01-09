@@ -1,6 +1,6 @@
 package com.ndrlslz.configuration.center.api.exception;
 
-class ConfigurationCenterApiException extends RuntimeException {
+abstract class ConfigurationCenterApiException extends RuntimeException {
     ConfigurationCenterApiException(String message) {
         super(message);
     }
