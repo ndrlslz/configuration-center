@@ -93,9 +93,8 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories = files(classDirectories.files.collect {
             fileTree(dir: it,
-                    excludes: ['com/ndrlslz/configuration/center/core/model',
-                               'com/ndrlslz/configuration/center/core/exception',
-                               'spike']
+                    excludes: ['com/ndrlslz/configuration/center/api/json',
+                               'com/ndrlslz/configuration/center/api/exception']
             )
         })
     }
@@ -108,9 +107,8 @@ jacocoTestCoverageVerification {
     afterEvaluate {
         classDirectories = files(classDirectories.files.collect {
             fileTree(dir: it,
-                    excludes: ['com/ndrlslz/configuration/center/core/model',
-                               'com/ndrlslz/configuration/center/core/exception',
-                               'spike']
+                    excludes: ['com/ndrlslz/configuration/center/api/json',
+                               'com/ndrlslz/configuration/center/api/exception']
             )
         })
     }
@@ -119,12 +117,12 @@ jacocoTestCoverageVerification {
         rule {
             limit {
                 counter = 'BRANCH'
-                minimum = 0.00
+                minimum = 0.90
             }
 
             limit {
                 counter = 'LINE'
-                minimum = 0.00
+                minimum = 0.90
             }
         }
     }

@@ -9,11 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DefaultConfigurationCenterDao implements ConfigurationCenterDao {
+public class DefaultApplicationDao implements ApplicationDao {
     private final ConfigurationCenterClient configurationCenterClient;
 
     @Autowired
-    public DefaultConfigurationCenterDao(ConfigurationCenterClient configurationCenterClient) {
+    public DefaultApplicationDao(ConfigurationCenterClient configurationCenterClient) {
         this.configurationCenterClient = configurationCenterClient;
     }
 

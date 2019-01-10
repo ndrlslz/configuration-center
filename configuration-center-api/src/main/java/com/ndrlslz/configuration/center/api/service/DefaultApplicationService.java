@@ -1,6 +1,6 @@
 package com.ndrlslz.configuration.center.api.service;
 
-import com.ndrlslz.configuration.center.api.dao.ConfigurationCenterDao;
+import com.ndrlslz.configuration.center.api.dao.ApplicationDao;
 import com.ndrlslz.configuration.center.api.json.application.*;
 import com.ndrlslz.configuration.center.api.json.common.Data;
 import com.ndrlslz.configuration.center.api.translator.ApplicationDataTranslator;
@@ -14,15 +14,15 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class DefaultConfigurationCenterApplicationService implements ConfigurationCenterService {
-    private final ConfigurationCenterDao configurationCenterDao;
+public class DefaultApplicationService implements ApplicationService {
+    private final ApplicationDao applicationDao;
 
     private final ApplicationDataTranslator applicationDataTranslator;
 
     @Autowired
-    public DefaultConfigurationCenterApplicationService(ConfigurationCenterDao dao,
-                                                        ApplicationDataTranslator applicationDataTranslator) {
-        this.configurationCenterDao = dao;
+    public DefaultApplicationService(ApplicationDao dao,
+                                     ApplicationDataTranslator applicationDataTranslator) {
+        this.applicationDao = dao;
         this.applicationDataTranslator = applicationDataTranslator;
     }
 
@@ -33,7 +33,7 @@ public class DefaultConfigurationCenterApplicationService implements Configurati
                 .withNumber(pageable.getPageNumber())
                 .build();
 
-        Page<String> applications = configurationCenterDao.getApplications(pagination);
+        Page<String> applications = applicationDao.getApplications(pagination);
 
         GetApplicationsResponse getApplicationsResponse = new GetApplicationsResponse();
         getApplicationsResponse.setData(applicationDataTranslator.translate(applications.getContent()));
@@ -46,16 +46,16 @@ public class DefaultConfigurationCenterApplicationService implements Configurati
     @Override
     public CreateApplicationResponse createApplication(CreateApplicationRequest request) {
         String applicationName = request.getData().getAttributes().getName();
-        configurationCenterDao.createApplication(applicationName);
+        applicationDao.createApplication(applicationName);
 
         Data<Application> data = applicationDataTranslator.transform(applicationName);
         CreateApplicationResponse response = new CreateApplicationResponse();
-        response.setApplication(data);
+        response.setData(data);
         return response;
     }
 
     @Override
     public void deleteApplication(String application) {
-        configurationCenterDao.deleteApplication(application);
+        applicationDao.deleteApplication(application);
     }
 }

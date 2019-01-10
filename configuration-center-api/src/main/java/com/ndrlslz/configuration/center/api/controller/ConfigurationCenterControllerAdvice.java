@@ -4,7 +4,6 @@ import com.ndrlslz.configuration.center.api.exception.ConfigurationCenterWrapper
 import com.ndrlslz.configuration.center.api.exception.InvalidRequestBodyException;
 import com.ndrlslz.configuration.center.api.json.error.Error;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.ConnectionLossException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;

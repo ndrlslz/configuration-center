@@ -3,7 +3,7 @@ package com.ndrlslz.configuration.center.api.controller;
 import com.ndrlslz.configuration.center.api.json.application.CreateApplicationRequest;
 import com.ndrlslz.configuration.center.api.json.application.CreateApplicationResponse;
 import com.ndrlslz.configuration.center.api.json.application.GetApplicationsResponse;
-import com.ndrlslz.configuration.center.api.service.ConfigurationCenterService;
+import com.ndrlslz.configuration.center.api.service.ApplicationService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -16,19 +16,19 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(produces = APPLICATION_JSON_VALUE)
-public class ConfigurationCenterApplicationController {
-    private final ConfigurationCenterService configurationCenterService;
+public class ApplicationController {
+    private final ApplicationService applicationService;
 
     @Autowired
-    public ConfigurationCenterApplicationController(ConfigurationCenterService configurationCenterService) {
-        this.configurationCenterService = configurationCenterService;
+    public ApplicationController(ApplicationService applicationService) {
+        this.applicationService = applicationService;
     }
 
     @GetMapping("applications")
     @ResponseStatus(OK)
     @ApiOperation("Get Applications")
     public GetApplicationsResponse getApplications(@PageableDefault Pageable pageable) {
-        return configurationCenterService.getApplications(pageable);
+        return applicationService.getApplications(pageable);
     }
 
     @PostMapping("applications")
@@ -37,13 +37,13 @@ public class ConfigurationCenterApplicationController {
     public CreateApplicationResponse createApplication(@RequestBody CreateApplicationRequest createApplicationRequest) {
         validate(createApplicationRequest);
 
-        return configurationCenterService.createApplication(createApplicationRequest);
+        return applicationService.createApplication(createApplicationRequest);
     }
 
     @DeleteMapping("applications/{name}")
     @ResponseStatus(OK)
-    @ApiOperation("Create Application")
+    @ApiOperation("Delete Application")
     public void deleteApplication(@PathVariable String name) {
-        configurationCenterService.deleteApplication(name);
+        applicationService.deleteApplication(name);
     }
 }

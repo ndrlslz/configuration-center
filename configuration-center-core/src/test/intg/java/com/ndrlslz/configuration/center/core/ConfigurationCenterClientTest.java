@@ -154,7 +154,12 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         configurationCenterClient.createApplication(CUSTOMER_API);
         configurationCenterClient.createEnvironment(CUSTOMER_API, "dev");
 
-        List<String> environments = configurationCenterClient.getEnvironments(CUSTOMER_API);
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        List<String> environments = configurationCenterClient.getEnvironments(CUSTOMER_API, pagination).getContent();
 
         assertThat(environments.size(), is(1));
         assertThat(environments, hasItem("dev"));
@@ -171,16 +176,38 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
     }
 
     @Test
-    public void shouldGetEnvironments() throws ConfigurationCenterException {
+    public void shouldGetEnvironmentsByPagination() throws ConfigurationCenterException {
         configurationCenterClient.createApplication(CUSTOMER_API);
         configurationCenterClient.createEnvironment(CUSTOMER_API, "dev");
+        configurationCenterClient.createEnvironment(CUSTOMER_API, "integration");
         configurationCenterClient.createEnvironment(CUSTOMER_API, "uat");
+        configurationCenterClient.createEnvironment(CUSTOMER_API, "performance");
         configurationCenterClient.createEnvironment(CUSTOMER_API, "prod");
 
-        List<String> environments = configurationCenterClient.getEnvironments(CUSTOMER_API);
+        Pagination firstPage = new Pagination.Builder()
+                .withSize(2)
+                .withNumber(0)
+                .build();
 
-        assertThat(environments.size(), is(3));
-        assertThat(environments, hasItems("dev", "uat", "prod"));
+        Page<String> firstEnvironmentsPage = configurationCenterClient.getEnvironments(CUSTOMER_API, firstPage);
+        List<String> firstEnvironments = firstEnvironmentsPage.getContent();
+
+        assertThat(firstEnvironmentsPage.getTotalPages(), is(3));
+        assertThat(firstEnvironmentsPage.getTotalElements(), is(5));
+        assertThat(firstEnvironments.size(), is(2));
+
+        Pagination pagination = new Pagination.Builder()
+                .withSize(Integer.MAX_VALUE)
+                .withNumber(0)
+                .build();
+
+        Page<String> environmentsPage = configurationCenterClient.getEnvironments(CUSTOMER_API, pagination);
+        List<String> environments = environmentsPage.getContent();
+
+        assertThat(environmentsPage.getTotalElements(), is(5));
+        assertThat(environmentsPage.getTotalPages(), is(1));
+        assertThat(environments.size(), is(5));
+        assertThat(environments, hasItems("dev", "integration", "uat", "performance", "prod"));
     }
 
     @Test
@@ -188,7 +215,12 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         expectedException.expect(ConfigurationCenterException.class);
         expectedException.expectCause(isA(KeeperException.NoNodeException.class));
 
-        configurationCenterClient.getEnvironments(CUSTOMER_API);
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        configurationCenterClient.getEnvironments(CUSTOMER_API, pagination);
     }
 
     @Test
@@ -199,7 +231,12 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         configurationCenterClient.createEnvironment(CUSTOMER_API, "prod");
         configurationCenterClient.deleteEnvironment(CUSTOMER_API, "prod");
 
-        List<String> environments = configurationCenterClient.getEnvironments(CUSTOMER_API);
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        List<String> environments = configurationCenterClient.getEnvironments(CUSTOMER_API, pagination).getContent();
 
         assertThat(environments.size(), is(2));
         assertThat(environments, hasItems("dev", "uat"));

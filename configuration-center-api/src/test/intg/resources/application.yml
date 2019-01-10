@@ -1,2 +1,4 @@
 configuration-center:
   connectionString: "localhost:10080"
+  sessionTimeoutMs: 10000
+  connectionTimeoutMs: 10000

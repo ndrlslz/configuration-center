@@ -10,49 +10,49 @@ import io.swagger.annotations.ApiModelProperty;
 public class Metadata {
     @JsonProperty("size")
     @ApiModelProperty(value = "Page Size", position = 1)
-    private long size;
+    private int size;
 
     @JsonProperty("number")
     @ApiModelProperty(value = "Page Number", position = 2)
-    private long number;
+    private int number;
 
     @JsonProperty("totalElements")
     @ApiModelProperty(value = "Total Page Size", position = 3)
-    private long totalElements;
+    private int totalElements;
 
     @JsonProperty("totalPages")
     @ApiModelProperty(value = "Total Page Numbers", position = 4)
-    private long totalPages;
+    private int totalPages;
 
-    public long getSize() {
+    public int getSize() {
         return size;
     }
 
-    public void setSize(long size) {
+    public void setSize(int size) {
         this.size = size;
     }
 
-    public long getTotalElements() {
+    public int getTotalElements() {
         return totalElements;
     }
 
-    public void setTotalElements(long totalElements) {
+    public void setTotalElements(int totalElements) {
         this.totalElements = totalElements;
     }
 
-    public long getTotalPages() {
+    public int getTotalPages() {
         return totalPages;
     }
 
-    public void setTotalPages(long totalPages) {
+    public void setTotalPages(int totalPages) {
         this.totalPages = totalPages;
     }
 
-    public long getNumber() {
+    public int getNumber() {
         return number;
     }
 
-    public void setNumber(long number) {
+    public void setNumber(int number) {
         this.number = number;
     }
 }

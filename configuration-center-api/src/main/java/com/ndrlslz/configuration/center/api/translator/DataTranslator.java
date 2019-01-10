@@ -7,11 +7,11 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 abstract class DataTranslator<I, O> {
-    abstract Data<O> transform(I input);
+    abstract Data<O> transform(I input, String... relationshipInformation);
 
-    public List<Data<O>> translate(List<I> list) {
+    public List<Data<O>> translate(List<I> list, String... relationshipInformation) {
         return list.stream()
-                .map(this::transform)
+                .map(input -> transform(input, relationshipInformation))
                 .collect(toList());
     }
 }

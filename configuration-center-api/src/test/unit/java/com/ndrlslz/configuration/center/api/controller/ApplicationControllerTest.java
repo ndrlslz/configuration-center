@@ -9,7 +9,7 @@ import com.ndrlslz.configuration.center.api.json.application.CreateApplicationRe
 import com.ndrlslz.configuration.center.api.json.application.GetApplicationsResponse;
 import com.ndrlslz.configuration.center.api.json.common.Data;
 import com.ndrlslz.configuration.center.api.json.common.Type;
-import com.ndrlslz.configuration.center.api.service.ConfigurationCenterService;
+import com.ndrlslz.configuration.center.api.service.ApplicationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -23,14 +23,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class ConfigurationCenterApplicationControllerTest {
+public class ApplicationControllerTest {
     private final static PageRequest PAGE = new PageRequest(1, 10);
 
     @Mock
-    private ConfigurationCenterService configurationCenterService;
+    private ApplicationService service;
 
     @InjectMocks
-    private ConfigurationCenterApplicationController configurationCenterApplicationController;
+    private ApplicationController controller;
 
     @Before
     public void setUp() {
@@ -41,9 +41,9 @@ public class ConfigurationCenterApplicationControllerTest {
     public void shouldGetApplications() {
         GetApplicationsResponse expected = new GetApplicationsResponse();
 
-        when(configurationCenterService.getApplications(PAGE)).thenReturn(expected);
+        when(service.getApplications(PAGE)).thenReturn(expected);
 
-        GetApplicationsResponse response = configurationCenterApplicationController.getApplications(PAGE);
+        GetApplicationsResponse response = controller.getApplications(PAGE);
 
         assertThat(response, is(expected));
     }
@@ -57,9 +57,9 @@ public class ConfigurationCenterApplicationControllerTest {
         createApplicationRequest.setData(data);
 
         CreateApplicationResponse expected = new CreateApplicationResponse();
-        when(configurationCenterService.createApplication(createApplicationRequest)).thenReturn(expected);
+        when(service.createApplication(createApplicationRequest)).thenReturn(expected);
 
-        CreateApplicationResponse response = configurationCenterApplicationController.createApplication(createApplicationRequest);
+        CreateApplicationResponse response = controller.createApplication(createApplicationRequest);
 
         assertThat(response, is(expected));
     }
@@ -72,20 +72,20 @@ public class ConfigurationCenterApplicationControllerTest {
         data.setAttributes(new Application("customer-api"));
         createApplicationRequest.setData(data);
 
-        configurationCenterApplicationController.createApplication(createApplicationRequest);
+        controller.createApplication(createApplicationRequest);
     }
 
     @Test
     public void shouldDeleteApplication() {
-        Mockito.doNothing().when(configurationCenterService).deleteApplication(any());
+        Mockito.doNothing().when(service).deleteApplication(any());
 
-        configurationCenterApplicationController.deleteApplication("customer-api");
+        controller.deleteApplication("customer-api");
     }
 
     @Test(expected = ConfigurationCenterWrapperException.class)
     public void shouldThrowExceptionWhenDeleteApplication() {
-        Mockito.doThrow(ConfigurationCenterWrapperException.class).when(configurationCenterService).deleteApplication(any());
+        Mockito.doThrow(ConfigurationCenterWrapperException.class).when(service).deleteApplication(any());
 
-        configurationCenterApplicationController.deleteApplication("customer-api");
+        controller.deleteApplication("customer-api");
     }
 }

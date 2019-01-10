@@ -44,6 +44,7 @@ public class ZookeeperClient {
         closeNodeCache();
 
         curatorFramework.close();
+
     }
 
     public String createNode(String path, String value) throws Exception {

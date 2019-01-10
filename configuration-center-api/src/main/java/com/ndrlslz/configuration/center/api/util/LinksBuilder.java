@@ -41,8 +41,8 @@ public class LinksBuilder {
                 .generateLink(REL_SELF, () -> true, number)
                 .generateLink(REL_FIRST, () -> true, 0)
                 .generateLink(REL_PREVIOUS, () -> number > 0 && number <= totalPages, number - 1)
-                .generateLink(REL_NEXT, () -> number < totalPages - 1, number + 1)
-                .generateLink(REL_LAST, () -> true, totalPages - 1);
+                .generateLink(REL_NEXT, () -> number >= 0 && number < totalPages - 1, number + 1)
+                .generateLink(REL_LAST, () -> true, totalPages == 0 ? 0 : totalPages - 1);
 
         return links.stream()
                 .filter(link -> nonNull(link.getHref()))

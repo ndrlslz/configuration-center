@@ -1,4 +1,4 @@
-package com.ndrlslz.configuration.center.api.json.application;
+package com.ndrlslz.configuration.center.api.json.environment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -8,16 +8,16 @@ import io.swagger.annotations.ApiModelProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CreateApplicationResponse {
+public class CreateEnvironmentRequest implements EnvironmentRequest {
     @JsonProperty("data")
-    @ApiModelProperty(value = "Applications Information", required = true, position = 1)
-    private Data<Application> data;
+    @ApiModelProperty(value = "Environments Information", required = true, position = 1)
+    private Data<Environment> data;
 
-    public Data<Application> getData() {
+    public Data<Environment> getData() {
         return data;
     }
 
-    public void setData(Data<Application> data) {
+    public void setData(Data<Environment> data) {
         this.data = data;
     }
 }

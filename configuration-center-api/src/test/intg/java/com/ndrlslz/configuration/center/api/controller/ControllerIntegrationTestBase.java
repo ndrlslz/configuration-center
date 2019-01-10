@@ -13,15 +13,18 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 
 import static java.lang.String.format;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public abstract class ControllerTestBase implements InitializingBean {
+@DirtiesContext(classMode = AFTER_CLASS)
+public abstract class ControllerIntegrationTestBase implements InitializingBean {
     private static TestingServer testingServer;
 
     @Autowired
@@ -46,23 +49,26 @@ public abstract class ControllerTestBase implements InitializingBean {
 
     @AfterClass
     public static void afterClass() throws IOException {
-        testingServer.close();
+        testingServer.stop();
     }
 
     @After
-    public void tearDown() throws ConfigurationCenterException {
+    public void tearDown() {
         Pagination pagination = new Pagination.Builder()
                 .withSize(Integer.MAX_VALUE)
                 .withNumber(0).build();
 
-        configurationCenterClient
-                .getApplications(pagination)
-                .getContent()
-                .forEach(app -> {
-                    try {
-                        configurationCenterClient.deleteApplication(app);
-                    } catch (ConfigurationCenterException ignored) {
-                    }
-                });
+        try {
+            configurationCenterClient
+                    .getApplications(pagination)
+                    .getContent()
+                    .forEach(app -> {
+                        try {
+                            configurationCenterClient.deleteApplication(app);
+                        } catch (ConfigurationCenterException ignored) {
+                        }
+                    });
+        } catch (ConfigurationCenterException ignored) {
+        }
     }
 }

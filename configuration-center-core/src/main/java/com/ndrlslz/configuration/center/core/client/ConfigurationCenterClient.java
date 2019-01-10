@@ -79,13 +79,14 @@ public class ConfigurationCenterClient {
         }
     }
 
-    public List<String> getEnvironments(String application) throws ConfigurationCenterException {
-        try {
-            return zookeeperClient.getChildren(pathOf(application));
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
+    public Page<String> getEnvironments(String application, Pagination pagination) throws ConfigurationCenterException {
+        AsyncResult<List<String>> result = async(() -> zookeeperClient.getChildren(pathOf(application)));
+
+        if (result.succeeded()) {
+            return pagination(result.getResult(), pagination);
         }
+
+        throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
     }
 
     public Node getProperty(String application, String environment, String property) throws ConfigurationCenterException {

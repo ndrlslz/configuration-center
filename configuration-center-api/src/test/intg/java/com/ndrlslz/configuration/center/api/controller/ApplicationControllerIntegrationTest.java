@@ -12,7 +12,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.CoreMatchers.*;
 
-public class ConfigurationCenterApplicationControllerIntegrationTest extends ControllerTestBase {
+public class ApplicationControllerIntegrationTest extends ControllerIntegrationTestBase {
 
     @Test
     public void shouldGetApplications() throws ConfigurationCenterException {

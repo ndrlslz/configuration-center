@@ -1,5 +1,6 @@
 package com.ndrlslz.configuration.center.api.configuration;
 
+import com.ndrlslz.configuration.center.api.exception.ConfigurationCenterConnectionException;
 import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,7 @@ public class ConfigurationCenterClientConfiguration {
         this.configurationCenterClientProperty = configurationCenterClientProperty;
     }
 
-    //TODO should handle first connection timeout exception
-    @Bean
+    @Bean(destroyMethod = "close")
     public ConfigurationCenterClient configurationCenterClient() {
         try {
             return new ConfigurationCenterClient.Builder()
@@ -25,8 +25,7 @@ public class ConfigurationCenterClientConfiguration {
                     .connectionTimeoutMs(configurationCenterClientProperty.getConnectionTimeoutMs())
                     .build();
         } catch (FirstConnectionTimeoutException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+            throw new ConfigurationCenterConnectionException(e.getMessage(), e);
         }
     }
 }

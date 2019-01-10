@@ -6,7 +6,7 @@ import com.ndrlslz.configuration.center.api.json.application.GetApplicationsResp
 import org.springframework.data.domain.Pageable;
 
 
-public interface ConfigurationCenterService {
+public interface ApplicationService {
     GetApplicationsResponse getApplications(Pageable pageable);
 
     CreateApplicationResponse createApplication(CreateApplicationRequest request);

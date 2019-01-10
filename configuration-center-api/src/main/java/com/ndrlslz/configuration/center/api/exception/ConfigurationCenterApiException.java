@@ -4,4 +4,8 @@ abstract class ConfigurationCenterApiException extends RuntimeException {
     ConfigurationCenterApiException(String message) {
         super(message);
     }
+
+    ConfigurationCenterApiException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
