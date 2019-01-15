@@ -9,4 +9,6 @@ public interface PropertyService {
     CreatePropertyResponse createProperty(String application, String environment, CreatePropertyRequest request);
 
     UpdatePropertyResponse updateProperty(String application, String environment, String property, UpdatePropertyRequest request);
+
+    void deleteProperty(String application, String environment, String property);
 }

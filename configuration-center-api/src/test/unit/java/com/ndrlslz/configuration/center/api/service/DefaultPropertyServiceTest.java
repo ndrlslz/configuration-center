@@ -107,6 +107,13 @@ public class DefaultPropertyServiceTest {
         assertThat(response.getData().getAttributes().getValue(), is("value"));
     }
 
+    @Test
+    public void shouldDeleteProperty() {
+        Mockito.doNothing().when(propertyDao).deleteProperty("customer-api", "dev", "key");
+
+        service.deleteProperty("customer-api", "dev", "key");
+    }
+
     private Node nodeOf(String key, String value) {
         Node node = new Node.Builder()
                 .withStat(new Stat())

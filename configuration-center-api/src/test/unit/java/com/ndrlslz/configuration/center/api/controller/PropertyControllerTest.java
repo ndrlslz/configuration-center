@@ -9,10 +9,12 @@ import com.ndrlslz.configuration.center.api.validation.PropertyDataValidator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.data.domain.PageRequest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -107,5 +109,12 @@ public class PropertyControllerTest {
         updatePropertyRequest.setData(data);
 
         propertyController.updateProperty("customer-api", "dev", "key", updatePropertyRequest);
+    }
+
+    @Test
+    public void shouldDeleteProperty() {
+        Mockito.doNothing().when(propertyService).deleteProperty(any(), any(), any());
+
+        propertyController.deleteProperty("customer-api", "dev", "key");
     }
 }

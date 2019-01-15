@@ -19,7 +19,7 @@ public class PropertyDataValidator implements Validator<PropertyRequest> {
         checkState(data.getType() == PROPERTY, "type not match, expect property, but receive " + data.getType());
     }
 
-    public void validateUpdateOrDelete(PropertyRequest request) {
+    public void validateUpdateRequest(PropertyRequest request) {
         validate(request);
 
         checkNotNull(request.getData().getAttributes().getVersion(), "version cannot be null");

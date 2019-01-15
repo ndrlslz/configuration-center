@@ -155,6 +155,36 @@ public class PropertyControllerIntegrationTest extends ControllerIntegrationTest
                 .body("exception", containsString("BadVersionException"));
     }
 
+    @Test
+    public void shouldDeleteProperty() throws ConfigurationCenterException {
+        configurationCenterClient.createApplication(CUSTOMER_API);
+        configurationCenterClient.createEnvironment(CUSTOMER_API, DEV);
+        configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key", "value");
+
+        given()
+                .accept(ContentType.JSON)
+                .contentType(ContentType.JSON)
+                .when()
+                .delete("/applications/customer-api/environments/dev/properties/key")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    public void shouldThrowNotFoundWhenDeletePropertyGivenPropertyNotExists() throws ConfigurationCenterException {
+        configurationCenterClient.createApplication(CUSTOMER_API);
+        configurationCenterClient.createEnvironment(CUSTOMER_API, DEV);
+
+        when()
+                .delete("/applications/customer-api/environments/dev/properties/key")
+                .then()
+                .statusCode(404)
+                .body("error", is("Not Found"))
+                .body("status", is(404))
+                .body("message", containsString("NoNode"))
+                .body("exception", containsString("NoNodeException"));
+    }
+
     private File requestFile(String name) throws IOException {
         return new ClassPathResource("request/property/" + name).getFile();
     }

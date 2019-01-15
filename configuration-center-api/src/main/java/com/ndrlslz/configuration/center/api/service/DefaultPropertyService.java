@@ -70,4 +70,9 @@ public class DefaultPropertyService implements PropertyService {
 
         return updatePropertyResponse;
     }
+
+    @Override
+    public void deleteProperty(String application, String environment, String property) {
+        propertyDao.deleteProperty(application, environment, property);
+    }
 }

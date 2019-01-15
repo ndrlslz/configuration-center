@@ -44,4 +44,13 @@ public class DefaultPropertyDao implements PropertyDao {
             throw new ConfigurationCenterWrapperException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public void deleteProperty(String application, String environment, String property) {
+        try {
+            configurationCenterClient.deleteProperty(application, environment, property);
+        } catch (ConfigurationCenterException e) {
+            throw new ConfigurationCenterWrapperException(e.getMessage(), e);
+        }
+    }
 }

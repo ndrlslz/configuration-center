@@ -10,4 +10,6 @@ public interface PropertyDao {
     void createProperty(String application, String environment, String property, String value);
 
     Node updateProperty(String application, String environment, String property, String value, int version);
+
+    void deleteProperty(String application, String environment, String property);
 }

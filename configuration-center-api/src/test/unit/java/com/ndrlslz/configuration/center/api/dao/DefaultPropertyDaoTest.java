@@ -88,4 +88,18 @@ public class DefaultPropertyDaoTest {
 
         dao.updateProperty("customer-api", "dev", "key", "value", 1);
     }
+
+    @Test
+    public void shouldDeleteProperty() throws ConfigurationCenterException {
+        Mockito.doNothing().when(client).deleteProperty("customer-api", "dev", "key");
+
+        dao.deleteProperty("customer-api", "dev", "key");
+    }
+
+    @Test(expected = ConfigurationCenterWrapperException.class)
+    public void shouldThrowExceptionWhenDeleteProperty() throws ConfigurationCenterException {
+        Mockito.doThrow(EXCEPTION).when(client).deleteProperty("customer-api", "dev", "key");
+
+        dao.deleteProperty("customer-api", "dev", "key");
+    }
 }
