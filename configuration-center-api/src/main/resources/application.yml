@@ -1,2 +1,8 @@
 configuration-center:
   connectionString: "localhost:2181"
+
+spring:
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+

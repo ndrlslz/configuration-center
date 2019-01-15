@@ -1,0 +1,9 @@
+{
+  "data": {
+    "type": "property",
+    "attributes": {
+      "name": "key",
+      "value": "value"
+    }
+  }
+}

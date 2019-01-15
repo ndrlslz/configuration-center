@@ -10,9 +10,9 @@ import com.ndrlslz.configuration.center.api.json.application.GetApplicationsResp
 import com.ndrlslz.configuration.center.api.json.common.Data;
 import com.ndrlslz.configuration.center.api.json.common.Type;
 import com.ndrlslz.configuration.center.api.service.ApplicationService;
+import com.ndrlslz.configuration.center.api.validation.ApplicationDataValidator;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.data.domain.PageRequest;
@@ -29,12 +29,14 @@ public class ApplicationControllerTest {
     @Mock
     private ApplicationService service;
 
-    @InjectMocks
+    private ApplicationDataValidator validator = new ApplicationDataValidator();
+
     private ApplicationController controller;
 
     @Before
     public void setUp() {
         initMocks(this);
+        controller = new ApplicationController(service, validator);
     }
 
     @Test

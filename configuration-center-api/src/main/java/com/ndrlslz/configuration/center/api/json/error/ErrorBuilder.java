@@ -20,6 +20,7 @@ public class ErrorBuilder {
     public static Error notFound(Throwable exception) {
         return newError(exception, NOT_FOUND);
     }
+
     private static Error newError(Throwable exception, HttpStatus httpStatus) {
         Error error = new Error();
         error.setException(exception.getClass().getName());

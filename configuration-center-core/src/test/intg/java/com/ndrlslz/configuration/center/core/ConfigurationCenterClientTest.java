@@ -325,7 +325,7 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
     }
 
     @Test
-    public void shouldGetProperties() throws ConfigurationCenterException {
+    public void shouldGetPropertiesByPagination() throws ConfigurationCenterException {
         configurationCenterClient.createApplication(CUSTOMER_API);
         configurationCenterClient.createEnvironment(CUSTOMER_API, DEV);
         configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key1", "value1");
@@ -333,13 +333,35 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
         configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key3", "value3");
         configurationCenterClient.createProperty(CUSTOMER_API, DEV, "key4", "value4");
 
-        List<Node> nodes = configurationCenterClient.getProperties(CUSTOMER_API, DEV);
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        List<Node> nodes = configurationCenterClient.getProperties(CUSTOMER_API, DEV, pagination).getContent();
         List<String> values = nodes.stream().map(Node::getValue).collect(toList());
         List<String> names = nodes.stream().map(Node::getName).collect(toList());
 
         assertThat(values.size(), is(4));
         assertThat(values, hasItems("value1", "value2", "value3", "value4"));
         assertThat(names, hasItems("key1", "key2", "key3", "key4"));
+
+        Pagination firstPagination = new Pagination.Builder()
+                .withSize(2)
+                .withNumber(0)
+                .build();
+
+        Page<Node> firstPage = configurationCenterClient.getProperties(CUSTOMER_API, DEV, firstPagination);
+        List<Node> firstPageNodes = firstPage.getContent();
+        List<String> firstPageValues = firstPageNodes.stream().map(Node::getValue).collect(toList());
+        List<String> firstPageNames = firstPageNodes.stream().map(Node::getName).collect(toList());
+
+
+        assertThat(firstPage.getTotalPages(), is(2));
+        assertThat(firstPage.getTotalElements(), is(4));
+        assertThat(firstPageValues.size(), is(2));
+        assertThat(firstPageValues, hasItems("value1", "value2"));
+        assertThat(firstPageNames, hasItems("key1", "key2"));
     }
 
     @Test
@@ -349,7 +371,12 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
 
         configurationCenterClient.createApplication(CUSTOMER_API);
 
-        configurationCenterClient.getProperties(CUSTOMER_API, DEV);
+        Pagination pagination = new Pagination.Builder()
+                .withSize(10)
+                .withNumber(0)
+                .build();
+
+        configurationCenterClient.getProperties(CUSTOMER_API, DEV, pagination);
     }
 
     @Test

@@ -2,14 +2,16 @@ package com.ndrlslz.configuration.center.api.validation;
 
 import com.ndrlslz.configuration.center.api.exception.InvalidRequestBodyException;
 
-class Validator {
-    static <T> void checkNotNull(T object, String message) {
+interface Validator<T> {
+    void validate(T request);
+
+    default void checkNotNull(Object object, String message) {
         if (object == null) {
             throw new InvalidRequestBodyException(message);
         }
     }
 
-    static void checkState(boolean expression, String message) {
+    default void checkState(boolean expression, String message) {
         if (!expression) {
             throw new InvalidRequestBodyException(message);
         }

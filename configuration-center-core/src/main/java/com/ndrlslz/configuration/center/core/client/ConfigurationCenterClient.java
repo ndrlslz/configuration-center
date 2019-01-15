@@ -7,19 +7,21 @@ import com.ndrlslz.configuration.center.core.model.AsyncResult;
 import com.ndrlslz.configuration.center.core.model.Node;
 import com.ndrlslz.configuration.center.core.model.Page;
 import com.ndrlslz.configuration.center.core.model.Pagination;
+import io.reactivex.Flowable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.Callable;
 
 import static com.ndrlslz.configuration.center.core.util.AsyncHelper.async;
 import static com.ndrlslz.configuration.center.core.util.PaginationHelper.pagination;
 import static com.ndrlslz.configuration.center.core.util.PathBuilder.pathOf;
 import static com.ndrlslz.configuration.center.core.util.PathBuilder.pathOfRoot;
+import static io.reactivex.schedulers.Schedulers.io;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 
 public class ConfigurationCenterClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationCenterClient.class);
@@ -118,7 +120,9 @@ public class ConfigurationCenterClient {
 
     public Node updateProperty(String application, String environment, String property, String value, int version) throws ConfigurationCenterException {
         try {
-            return zookeeperClient.updateNode(pathOf(application, environment, property), value, version);
+            Node node = zookeeperClient.updateNode(pathOf(application, environment, property), value, version);
+            node.setName(property);
+            return node;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new ConfigurationCenterException(e.getMessage(), e);
@@ -134,44 +138,46 @@ public class ConfigurationCenterClient {
         }
     }
 
-    //TODO: currently use sync & block method to get properties. plan to use RxJava to rewrite this function.
-    public List<Node> getProperties(String application, String environment) throws ConfigurationCenterException {
-//        try {
-//            return Flowable.fromIterable(getChildren(application, environment))
-//                    .parallel()
-//                    .runOn(io())
-//                    .map(subPath -> getProperty(application, environment, subPath))
-//                    .sequential()
-//                    .collect((Callable<List<Node>>) ArrayList::new, List::add)
-//                    .blockingGet();
-//        } catch (Exception e) {
-//            throw new ConfigurationCenterException(e.getMessage(), e);
-//        }
-//
+    public Page<Node> getProperties(String application, String environment, Pagination pagination) throws ConfigurationCenterException {
+        AsyncResult<List<String>> result = async(() -> zookeeperClient.getChildren(pathOf(application, environment)));
+
+        if (result.failed()) {
+            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
+        }
+
+        Page<String> propertyNames = pagination(result.getResult(), pagination);
+        List<Node> nodes = Flowable.fromIterable(propertyNames.getContent())
+                .parallel()
+                .runOn(io())
+                .flatMap(property -> getPropertyWithoutException(application, environment, property))
+                .sequential()
+                .collect((Callable<List<Node>>) ArrayList::new, List::add)
+                .blockingGet();
+
+        return new Page.Builder<Node>()
+                .withContent(nodes)
+                .withSize(propertyNames.getSize())
+                .withNumber(propertyNames.getNumber())
+                .withTotalElements(propertyNames.getTotalElements())
+                .withTotalPages(propertyNames.getTotalPages())
+                .build();
+    }
+
+    public void listenProperty(String application, String environment, String property, NodeListener nodeListener) throws
+            ConfigurationCenterException {
         try {
-            List<String> children = zookeeperClient.getChildren(pathOf(application, environment));
-            return children
-                    .parallelStream()
-                    .map(subPath -> {
-                        try {
-                            return getProperty(application, environment, subPath);
-                        } catch (Exception e) {
-                            LOGGER.error(e.getMessage(), e);
-                        }
-                        return null;
-                    })
-                    .filter(Objects::nonNull)
-                    .collect(toList());
+            zookeeperClient.listen(pathOf(application, environment, property), nodeListener);
         } catch (Exception e) {
             throw new ConfigurationCenterException(e.getMessage(), e);
         }
     }
 
-    public void listenProperty(String application, String environment, String property, NodeListener nodeListener) throws ConfigurationCenterException {
+    private Flowable<Node> getPropertyWithoutException(String application, String environment, String property) {
         try {
-            zookeeperClient.listen(pathOf(application, environment, property), nodeListener);
+            return Flowable.just(getProperty(application, environment, property));
         } catch (Exception e) {
-            throw new ConfigurationCenterException(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
+            return Flowable.empty();
         }
     }
 

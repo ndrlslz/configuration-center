@@ -3,13 +3,14 @@ package com.ndrlslz.configuration.center.api.validation;
 import com.ndrlslz.configuration.center.api.json.application.Application;
 import com.ndrlslz.configuration.center.api.json.application.ApplicationRequest;
 import com.ndrlslz.configuration.center.api.json.common.Data;
+import org.springframework.stereotype.Service;
 
 import static com.ndrlslz.configuration.center.api.json.common.Type.APPLICATION;
-import static com.ndrlslz.configuration.center.api.validation.Validator.checkNotNull;
-import static com.ndrlslz.configuration.center.api.validation.Validator.checkState;
 
-public class ApplicationDataValidator {
-    public static void validate(ApplicationRequest applicationRequest) {
+@Service
+public class ApplicationDataValidator implements Validator<ApplicationRequest> {
+    @Override
+    public void validate(ApplicationRequest applicationRequest) {
         Data<Application> data = applicationRequest.getData();
 
         checkNotNull(data, "data cannot be null");

@@ -4,6 +4,7 @@ import com.ndrlslz.configuration.center.api.exception.ConfigurationCenterWrapper
 import com.ndrlslz.configuration.center.api.exception.InvalidRequestBodyException;
 import com.ndrlslz.configuration.center.api.json.error.Error;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.ConnectionLossException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -35,6 +36,8 @@ public class ConfigurationCenterControllerAdvice {
             return ResponseEntity.status(CONFLICT).body(conflict(cause));
         } else if (cause instanceof NoNodeException) {
             return ResponseEntity.status(NOT_FOUND).body(notFound(cause));
+        } else if (cause instanceof KeeperException.BadVersionException) {
+            return ResponseEntity.status(BAD_REQUEST).body(badRequest(cause));
         }
 
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(internalServerError(configurationCenterException));

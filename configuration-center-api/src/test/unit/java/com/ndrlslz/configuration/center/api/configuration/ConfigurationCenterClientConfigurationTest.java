@@ -14,7 +14,6 @@ public class ConfigurationCenterClientConfigurationTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private ConfigurationCenterClientProperty property;
     private ConfigurationCenterClientConfiguration configuration;
     private TestingServer testingServer;
 
@@ -23,7 +22,7 @@ public class ConfigurationCenterClientConfigurationTest {
         testingServer = new TestingServer(6666);
         testingServer.start();
 
-        property = new ConfigurationCenterClientProperty();
+        ConfigurationCenterClientProperty property = new ConfigurationCenterClientProperty();
         property.setConnectionString(testingServer.getConnectString());
         configuration = new ConfigurationCenterClientConfiguration(property);
     }

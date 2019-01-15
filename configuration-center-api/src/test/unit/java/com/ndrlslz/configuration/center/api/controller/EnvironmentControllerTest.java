@@ -9,9 +9,9 @@ import com.ndrlslz.configuration.center.api.json.environment.CreateEnvironmentRe
 import com.ndrlslz.configuration.center.api.json.environment.Environment;
 import com.ndrlslz.configuration.center.api.json.environment.GetEnvironmentsResponse;
 import com.ndrlslz.configuration.center.api.service.EnvironmentService;
+import com.ndrlslz.configuration.center.api.validation.EnvironmentDataValidator;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.data.domain.PageRequest;
@@ -28,12 +28,14 @@ public class EnvironmentControllerTest {
     @Mock
     private EnvironmentService service;
 
-    @InjectMocks
+    private EnvironmentDataValidator validator = new EnvironmentDataValidator();
+
     private EnvironmentController controller;
 
     @Before
     public void setUp() {
         initMocks(this);
+        controller = new EnvironmentController(service, validator);
     }
 
     @Test

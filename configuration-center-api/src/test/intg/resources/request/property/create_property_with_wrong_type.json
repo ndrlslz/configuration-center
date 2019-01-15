@@ -1,0 +1,9 @@
+{
+  "data": {
+    "type": "application",
+    "attributes": {
+      "name": "key",
+      "value": "value"
+    }
+  }
+}

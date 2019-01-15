@@ -5,7 +5,6 @@ import com.ndrlslz.configuration.center.api.json.application.CreateApplicationRe
 import com.ndrlslz.configuration.center.api.json.application.GetApplicationsResponse;
 import org.springframework.data.domain.Pageable;
 
-
 public interface ApplicationService {
     GetApplicationsResponse getApplications(Pageable pageable);
 

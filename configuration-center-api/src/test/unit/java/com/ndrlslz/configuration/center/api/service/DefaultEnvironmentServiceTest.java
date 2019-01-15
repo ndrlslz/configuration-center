@@ -47,7 +47,7 @@ public class DefaultEnvironmentServiceTest {
     }
 
     @Test
-    public void shouldGenerateEnvironments() {
+    public void shouldGetEnvironments() {
         Page<String> expect = new Page.Builder<String>()
                 .withTotalPages(1)
                 .withTotalElements(3)
