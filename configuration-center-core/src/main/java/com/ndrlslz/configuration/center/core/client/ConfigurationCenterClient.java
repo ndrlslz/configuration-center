@@ -42,108 +42,79 @@ public class ConfigurationCenterClient {
     public void createApplication(String application) throws ConfigurationCenterException {
         AsyncResult<String> result = async(() -> zookeeperClient.createNode(pathOf(application)));
 
-        if (result.failed()) {
-            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
-        }
+        throwExceptionIfFail(result);
     }
 
     public void deleteApplication(String application) throws ConfigurationCenterException {
         AsyncResult result = async(() -> zookeeperClient.deleteNode(pathOf(application)));
 
-        if (result.failed()) {
-            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
-        }
+        throwExceptionIfFail(result);
     }
 
     public Page<String> getApplications(Pagination pagination) throws ConfigurationCenterException {
         AsyncResult<List<String>> result = async(() -> zookeeperClient.getChildren(pathOfRoot()));
 
-        if (result.succeeded()) {
-            return pagination(result.getResult(), pagination);
-        }
+        throwExceptionIfFail(result);
 
-        throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
+        return pagination(result.getResult(), pagination);
     }
 
     public void createEnvironment(String application, String environment) throws ConfigurationCenterException {
         AsyncResult<String> result = async(() -> zookeeperClient.createNode(pathOf(application, environment)));
 
-        if (result.failed()) {
-            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
-        }
+        throwExceptionIfFail(result);
     }
 
     public void deleteEnvironment(String application, String environment) throws ConfigurationCenterException {
         AsyncResult result = async(() -> zookeeperClient.deleteNode(pathOf(application, environment)));
 
-        if (result.failed()) {
-            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
-        }
+        throwExceptionIfFail(result);
     }
 
     public Page<String> getEnvironments(String application, Pagination pagination) throws ConfigurationCenterException {
         AsyncResult<List<String>> result = async(() -> zookeeperClient.getChildren(pathOf(application)));
 
-        if (result.succeeded()) {
-            return pagination(result.getResult(), pagination);
-        }
+        throwExceptionIfFail(result);
 
-        throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
+        return pagination(result.getResult(), pagination);
     }
 
     public Node getProperty(String application, String environment, String property) throws ConfigurationCenterException {
-//        AsyncResult<Node> asyncResult = async(() -> zookeeperClient.getNode(pathOf(application, environment, property)));
-//        if (asyncResult.failed()) {
-//            Exception exception = asyncResult.getException();
-//            throw new ConfigurationCenterException(exception.getMessage(), exception);
-//        }
-//        return asyncResult.getResult();
+        AsyncResult<Node> result = async(() -> zookeeperClient.getNode(pathOf(application, environment, property)));
 
-        try {
-            Node node = zookeeperClient.getNode(pathOf(application, environment, property));
-            node.setName(property);
-            return node;
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
-        }
+        throwExceptionIfFail(result);
+
+        Node node = result.getResult();
+        node.setName(property);
+        return node;
     }
 
     public void createProperty(String application, String environment, String property, String value) throws ConfigurationCenterException {
-        try {
-            zookeeperClient.createNode(pathOf(application, environment, property), value);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
-        }
+        AsyncResult<String> result = async(() -> zookeeperClient.createNode(pathOf(application, environment, property), value));
+
+        throwExceptionIfFail(result);
     }
 
     public Node updateProperty(String application, String environment, String property, String value, int version) throws ConfigurationCenterException {
-        try {
-            Node node = zookeeperClient.updateNode(pathOf(application, environment, property), value, version);
-            node.setName(property);
-            return node;
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
-        }
+        AsyncResult<Node> result = async(() -> zookeeperClient.updateNode(pathOf(application, environment, property), value, version));
+
+        throwExceptionIfFail(result);
+
+        Node node = result.getResult();
+        node.setName(property);
+        return node;
     }
 
     public void deleteProperty(String application, String environment, String property) throws ConfigurationCenterException {
-        try {
-            zookeeperClient.deleteNode(pathOf(application, environment, property));
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new ConfigurationCenterException(e.getMessage(), e);
-        }
+        AsyncResult result = async(() -> zookeeperClient.deleteNode(pathOf(application, environment, property)));
+
+        throwExceptionIfFail(result);
     }
 
     public Page<Node> getProperties(String application, String environment, Pagination pagination) throws ConfigurationCenterException {
         AsyncResult<List<String>> result = async(() -> zookeeperClient.getChildren(pathOf(application, environment)));
 
-        if (result.failed()) {
-            throw new ConfigurationCenterException(result.getException().getMessage(), result.getException());
-        }
+        throwExceptionIfFail(result);
 
         Page<String> propertyNames = pagination(result.getResult(), pagination);
         List<Node> nodes = Flowable.fromIterable(propertyNames.getContent())
@@ -163,12 +134,17 @@ public class ConfigurationCenterClient {
                 .build();
     }
 
-    public void listenProperty(String application, String environment, String property, NodeListener nodeListener) throws
-            ConfigurationCenterException {
-        try {
-            zookeeperClient.listen(pathOf(application, environment, property), nodeListener);
-        } catch (Exception e) {
-            throw new ConfigurationCenterException(e.getMessage(), e);
+    public void listenProperty(String application, String environment, String property, NodeListener nodeListener) throws ConfigurationCenterException {
+        AsyncResult result = async(() -> zookeeperClient.listen(pathOf(application, environment, property), nodeListener));
+
+        throwExceptionIfFail(result);
+    }
+
+    private void throwExceptionIfFail(AsyncResult result) throws ConfigurationCenterException {
+        if (result.failed()) {
+            Exception exception = result.getException();
+            LOGGER.error(exception.getMessage(), exception);
+            throw new ConfigurationCenterException(exception.getMessage(), exception);
         }
     }
 
