@@ -2,7 +2,7 @@ package com.ndrlslz.configuration.center.sdk.client;
 
 import com.ndrlslz.configuration.center.sdk.listener.ConfigListener;
 
-public interface ConfigurationCenterTemplateInterface {
+public interface ConfigurationOperations {
     boolean isConnected();
 
     String get(String name);

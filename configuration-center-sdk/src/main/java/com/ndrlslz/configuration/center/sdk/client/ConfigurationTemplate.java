@@ -4,15 +4,16 @@ import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.sdk.listener.ConfigListener;
+import org.apache.zookeeper.KeeperException.NoNodeException;
 
 import static java.util.Objects.requireNonNull;
 
-public class ConfigurationCenterTemplate implements ConfigurationCenterTemplateInterface {
+public class ConfigurationTemplate extends ConfigurationAccessor {
     private ConfigurationCenterClient configurationCenterClient;
     private String application;
     private String environment;
 
-    private ConfigurationCenterTemplate(Builder builder) {
+    private ConfigurationTemplate(Builder builder) {
         this.application = builder.application;
         this.environment = builder.environment;
         this.configurationCenterClient = builder.configurationCenterClient;
@@ -24,13 +25,17 @@ public class ConfigurationCenterTemplate implements ConfigurationCenterTemplateI
     }
 
     @Override
-    public String get(String name) {
-        try {
-            return configurationCenterClient.getProperty(application, environment, name).getValue();
-        } catch (ConfigurationCenterException e) {
-            e.printStackTrace();
-            return null;
+    public String getFromZookeeper(String name) {
+        if (isConnected()) {
+            try {
+                return configurationCenterClient.getProperty(application, environment, name).getValue();
+            } catch (ConfigurationCenterException e) {
+                if (e.getCause() instanceof NoNodeException) {
+                    throw new RuntimeException("node not exists");
+                }
+            }
         }
+        return null;
     }
 
     @Override
@@ -83,7 +88,7 @@ public class ConfigurationCenterTemplate implements ConfigurationCenterTemplateI
             return this;
         }
 
-        public ConfigurationCenterTemplate build() {
+        public ConfigurationTemplate build() {
             requireNonNull(connectionString, "connectionString cannot be null");
             requireNonNull(application, "application cannot be null");
             requireNonNull(environment, "environment cannot be null");
@@ -98,7 +103,7 @@ public class ConfigurationCenterTemplate implements ConfigurationCenterTemplateI
             } catch (FirstConnectionTimeoutException ignored) {
             }
 
-            return new ConfigurationCenterTemplate(this);
+            return new ConfigurationTemplate(this);
         }
     }
 }
