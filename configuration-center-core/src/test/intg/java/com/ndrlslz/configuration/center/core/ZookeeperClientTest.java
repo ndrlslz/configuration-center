@@ -31,12 +31,23 @@ public class ZookeeperClientTest extends ZookeeperClientBaseIntegrationTest {
     }
 
     @Test(expected = FirstConnectionTimeoutException.class)
-    public void shouldThrowExceptionWhenFirstTimeConnectZookeeperGivenZookeeperStopped() throws IOException, InterruptedException, FirstConnectionTimeoutException {
+    public void shouldThrowExceptionWhenFirstTimeConnectZookeeperGivenZookeeperStoppedAndFastFail() throws IOException, InterruptedException, FirstConnectionTimeoutException {
         testingServer.close();
         TimeUnit.SECONDS.sleep(1);
 
         zookeeperClient = new ZookeeperClient.Builder()
                 .connectionString(testingServer.getConnectString())
+                .build();
+    }
+
+    @Test
+    public void shouldNotThrowExceptionGivenZookeeperStoppedAndFastFailIsFalse() throws IOException, InterruptedException, FirstConnectionTimeoutException {
+        testingServer.close();
+        TimeUnit.SECONDS.sleep(1);
+
+        zookeeperClient = new ZookeeperClient.Builder()
+                .connectionString(testingServer.getConnectString())
+                .fastFail(false)
                 .build();
     }
 

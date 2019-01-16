@@ -18,6 +18,7 @@ public abstract class ZookeeperClientBaseIntegrationTest {
                 .connectionString(testingServer.getConnectString())
                 .connectionTimeoutMs(5000)
                 .sessionTimeoutMs(5000)
+                .fastFail(true)
                 .build();
     }
 

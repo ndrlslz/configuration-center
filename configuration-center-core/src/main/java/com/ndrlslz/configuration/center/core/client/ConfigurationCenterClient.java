@@ -161,6 +161,7 @@ public class ConfigurationCenterClient {
         private String connectionString;
         private Integer sessionTimeoutMs;
         private Integer connectionTimeoutMs;
+        private Boolean fastFail;
 
         public Builder connectionString(String connectionString) {
             this.connectionString = connectionString;
@@ -177,22 +178,29 @@ public class ConfigurationCenterClient {
             return this;
         }
 
+        public Builder fastFail(boolean fastFail) {
+            this.fastFail = fastFail;
+            return this;
+        }
+
         public ConfigurationCenterClient build() throws FirstConnectionTimeoutException {
             requireNonNull(connectionString, "connectionString cannot be null");
 
             ZookeeperClient.Builder builder = new ZookeeperClient.Builder()
                     .connectionString(connectionString);
 
-            if (nonNull(sessionTimeoutMs)) {
-                builder.sessionTimeoutMs(sessionTimeoutMs);
-            }
-
-            if (nonNull(connectionTimeoutMs)) {
-                builder.connectionTimeoutMs(connectionTimeoutMs);
-            }
+            setupBuilderIfNotNull(sessionTimeoutMs, () -> builder.sessionTimeoutMs(sessionTimeoutMs));
+            setupBuilderIfNotNull(connectionTimeoutMs, () -> builder.connectionTimeoutMs(connectionTimeoutMs));
+            setupBuilderIfNotNull(fastFail, () -> builder.fastFail(fastFail));
 
             ZookeeperClient zookeeperClient = builder.build();
             return new ConfigurationCenterClient(zookeeperClient);
+        }
+
+        private void setupBuilderIfNotNull(Object object, Runnable runnable) {
+            if (nonNull(object)) {
+                runnable.run();
+            }
         }
     }
 }

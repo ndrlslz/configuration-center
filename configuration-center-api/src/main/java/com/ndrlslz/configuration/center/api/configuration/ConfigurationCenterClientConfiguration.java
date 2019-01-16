@@ -23,6 +23,7 @@ public class ConfigurationCenterClientConfiguration {
                     .connectionString(configurationCenterClientProperty.getConnectionString())
                     .sessionTimeoutMs(configurationCenterClientProperty.getSessionTimeoutMs())
                     .connectionTimeoutMs(configurationCenterClientProperty.getConnectionTimeoutMs())
+                    .fastFail(true)
                     .build();
         } catch (FirstConnectionTimeoutException e) {
             throw new ConfigurationCenterConnectionException(e.getMessage(), e);

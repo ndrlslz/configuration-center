@@ -26,9 +26,10 @@ public class ZookeeperClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperClient.class);
     private static final int FIRST_CONNECTION_TIMEOUT_S = 10;
     private static final int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
-    private static final int DEFAULT_CONNECTION_TIMEOUT_MS = 15 * 1000;
+    private static final int DEFAULT_CONNECTION_TIMEOUT_MS = 5 * 1000;
     private static final int SLEEP_MS_BETWEEN_RETRY = 1000;
     private static final String NAMESPACE = "configuration-center";
+    private static final boolean DEFAULT_FAST_FAIL = true;
     private static final ConcurrentHashMap<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
     private CuratorFramework curatorFramework;
 
@@ -126,7 +127,7 @@ public class ZookeeperClient {
         nodeCacheMap.forEach((key, nodeCache) -> {
             try {
                 nodeCache.close();
-                LOGGER.debug("Close node cache for path {}", key);
+                LOGGER.debug("Close node cache for path /{}{}", NAMESPACE, key);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -136,6 +137,7 @@ public class ZookeeperClient {
     public static class Builder {
         private int sessionTimeoutMs = DEFAULT_SESSION_TIMEOUT_MS;
         private int connectionTimeoutMs = DEFAULT_CONNECTION_TIMEOUT_MS;
+        private boolean fastFail = DEFAULT_FAST_FAIL;
         private String connectionString;
 
         public Builder connectionString(String connectionString) {
@@ -150,6 +152,11 @@ public class ZookeeperClient {
 
         public Builder connectionTimeoutMs(int connectionTimeoutMs) {
             this.connectionTimeoutMs = connectionTimeoutMs;
+            return this;
+        }
+
+        public Builder fastFail(boolean fastFail) {
+            this.fastFail = fastFail;
             return this;
         }
 
@@ -169,15 +176,21 @@ public class ZookeeperClient {
                 curatorFramework.blockUntilConnected(FIRST_CONNECTION_TIMEOUT_S, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted Exception when connect to zookeeper.", e);
-                curatorFramework.close();
             }
 
-            if (!curatorFramework.getZookeeperClient().isConnected()) {
-                curatorFramework.close();
-                throw new FirstConnectionTimeoutException("Connection timeout when first time connect to zookeeper");
+            if (notConnected(curatorFramework)) {
+                if (fastFail) {
+                    curatorFramework.close();
+                    throw new FirstConnectionTimeoutException("Connection timeout when first time connect to zookeeper");
+                }
+                LOGGER.error("Cannot connect to zookeeper within 10 seconds, but will keep retry");
             }
 
             return new ZookeeperClient(curatorFramework);
+        }
+
+        private boolean notConnected(CuratorFramework curatorFramework) {
+            return !curatorFramework.getZookeeperClient().isConnected();
         }
     }
 }

@@ -2,3 +2,4 @@ rootProject.name = 'configuration-center'
 
 include 'configuration-center-core'
 include 'configuration-center-api'
+include 'configuration-center-sdk'
