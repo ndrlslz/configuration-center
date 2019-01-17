@@ -28,7 +28,7 @@ public class ZookeeperClient {
     private static final int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
     private static final int DEFAULT_CONNECTION_TIMEOUT_MS = 5 * 1000;
     private static final int SLEEP_MS_BETWEEN_RETRY = 1000;
-    private static final String NAMESPACE = "configuration-center";
+    public static final String NAMESPACE = "configuration-center";
     private static final boolean DEFAULT_FAST_FAIL = true;
     private static final ConcurrentHashMap<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
     private CuratorFramework curatorFramework;

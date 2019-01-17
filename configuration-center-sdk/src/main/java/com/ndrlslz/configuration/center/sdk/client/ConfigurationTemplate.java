@@ -1,14 +1,19 @@
 package com.ndrlslz.configuration.center.sdk.client;
 
 import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
+import com.ndrlslz.configuration.center.core.client.ZookeeperClient;
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
-import com.ndrlslz.configuration.center.sdk.listener.ConfigListener;
+import com.ndrlslz.configuration.center.sdk.exception.ZookeeperNodeNotExistsException;
+import com.ndrlslz.configuration.center.sdk.listener.ConfigurationListener;
 import org.apache.zookeeper.KeeperException.NoNodeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
 
 public class ConfigurationTemplate extends ConfigurationAccessor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationTemplate.class);
     private ConfigurationCenterClient configurationCenterClient;
     private String application;
     private String environment;
@@ -25,13 +30,13 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
     }
 
     @Override
-    public String getFromZookeeper(String name) {
+    public String getFromRemote(String name) {
         if (isConnected()) {
             try {
                 return configurationCenterClient.getProperty(application, environment, name).getValue();
             } catch (ConfigurationCenterException e) {
                 if (e.getCause() instanceof NoNodeException) {
-                    throw new RuntimeException("node not exists");
+                    throw new ZookeeperNodeNotExistsException(String.format("application is able to connect zookeeper, but cannot find node /%s/%s/%s/%s, consider adding it into zookeeper", ZookeeperClient.NAMESPACE, application, environment, name), e.getCause());
                 }
             }
         }
@@ -39,11 +44,11 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
     }
 
     @Override
-    public void listen(String name, ConfigListener configListener) {
+    public void listen(String name, ConfigurationListener configurationListener) {
         try {
             configurationCenterClient.listenProperty(application, environment, name, node -> {
                 String value = node.getValue();
-                configListener.configChanged(value);
+                configurationListener.configChanged(value);
             });
         } catch (ConfigurationCenterException e) {
             e.printStackTrace();
