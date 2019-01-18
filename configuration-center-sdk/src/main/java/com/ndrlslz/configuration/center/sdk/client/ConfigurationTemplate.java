@@ -6,10 +6,12 @@ import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterExcept
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.sdk.exception.ZookeeperNodeNotExistsException;
 import com.ndrlslz.configuration.center.sdk.listener.ConfigurationListener;
+import com.ndrlslz.configuration.center.sdk.storage.ZookeeperStorage;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 public class ConfigurationTemplate extends ConfigurationAccessor {
@@ -36,22 +38,23 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
                 return configurationCenterClient.getProperty(application, environment, name).getValue();
             } catch (ConfigurationCenterException e) {
                 if (e.getCause() instanceof NoNodeException) {
-                    throw new ZookeeperNodeNotExistsException(String.format("application is able to connect zookeeper, but cannot find node /%s/%s/%s/%s, consider adding it into zookeeper", ZookeeperClient.NAMESPACE, application, environment, name), e.getCause());
+                    throw new ZookeeperNodeNotExistsException(format("application is able to connect zookeeper, but cannot find node /%s/%s/%s/%s, consider adding it into zookeeper", ZookeeperClient.NAMESPACE, application, environment, name), e.getCause());
                 }
+                LOGGER.error("application is able to connect zookeeper, but cannot get node", e.getCause());
             }
         }
         return null;
     }
 
     @Override
-    public void listen(String name, ConfigurationListener configurationListener) {
+    public void listenRemote(String name, ConfigurationListener configurationListener) {
         try {
             configurationCenterClient.listenProperty(application, environment, name, node -> {
-                String value = node.getValue();
-                configurationListener.configChanged(value);
+                configurationListener.configChanged(node.getValue());
+                ZookeeperStorage.set(name, node.getValue());
             });
         } catch (ConfigurationCenterException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e.getCause());
         }
     }
 

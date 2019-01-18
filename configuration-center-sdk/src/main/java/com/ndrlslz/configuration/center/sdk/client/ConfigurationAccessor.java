@@ -2,34 +2,62 @@ package com.ndrlslz.configuration.center.sdk.client;
 
 import com.ndrlslz.configuration.center.sdk.exception.ConfigurationNotFoundException;
 import com.ndrlslz.configuration.center.sdk.exception.ConfigurationSdkException;
-import com.ndrlslz.configuration.center.sdk.failover.ConfigurationFailOver;
-import com.ndrlslz.configuration.center.sdk.storage.MemoryStorage;
+import com.ndrlslz.configuration.center.sdk.failover.ConfigurationFailover;
+import com.ndrlslz.configuration.center.sdk.listener.ConfigurationListener;
+import com.ndrlslz.configuration.center.sdk.persistence.ConfigurationPersistence;
+import com.ndrlslz.configuration.center.sdk.storage.FailoverStorage;
+import com.ndrlslz.configuration.center.sdk.storage.ZookeeperStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 abstract class ConfigurationAccessor implements ConfigurationOperations {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationAccessor.class);
+
     ConfigurationAccessor() {
-        ConfigurationFailOver configurationFailOver = new ConfigurationFailOver();
-        configurationFailOver.failover();
+        new ConfigurationFailover().run();
+        new ConfigurationPersistence().run();
     }
 
     abstract String getFromRemote(String name);
+
+    abstract void listenRemote(String name, ConfigurationListener configurationListener);
 
     @Override
     public String get(String name) {
         String valueFromRemote = getFromRemote(name);
         if (nonNull(valueFromRemote)) {
-            MemoryStorage.set(name, valueFromRemote);
+            ZookeeperStorage.set(name, valueFromRemote);
             return valueFromRemote;
         }
 
-        String valueFromLocalMemory = MemoryStorage.get(name);
-        if (isNull(valueFromLocalMemory)) {
-            throw new ConfigurationNotFoundException(format("Cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
+        LOGGER.debug("Cannot get {} from remote, failover to memory cache or disaster recovery", name);
+
+        String valueFromFailover = FailoverStorage.get(name);
+        if (nonNull(valueFromFailover)) {
+            ZookeeperStorage.setIfAbsent(name, valueFromFailover);
+            return valueFromFailover;
         }
-        return valueFromLocalMemory;
+
+        throw new ConfigurationNotFoundException(format("Cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
+    }
+
+    @Override
+    public void listen(String name, ConfigurationListener configurationListener) {
+        listenRemote(name, configurationListener);
+
+        if (!isConnected()) {
+            String valueFromFailover = FailoverStorage.get(name);
+            if (isNull(valueFromFailover)) {
+                throw new ConfigurationNotFoundException(format("Cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
+            }
+
+            ZookeeperStorage.setIfAbsent(name, valueFromFailover);
+            configurationListener.configChanged(valueFromFailover);
+        }
     }
 
     @Override
