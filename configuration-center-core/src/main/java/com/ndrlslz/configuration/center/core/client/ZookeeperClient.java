@@ -24,7 +24,7 @@ import static java.util.Objects.nonNull;
 
 public class ZookeeperClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperClient.class);
-    private static final int FIRST_CONNECTION_TIMEOUT_S = 10;
+    private static final Integer FIRST_CONNECTION_TIMEOUT_S = 10;
     private static final int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
     private static final int DEFAULT_CONNECTION_TIMEOUT_MS = 5 * 1000;
     private static final int SLEEP_MS_BETWEEN_RETRY = 1000;

@@ -13,13 +13,17 @@ public class ConfigurationFileWriter {
     private static final String PROPERTY_FORMAT = "%s=%s";
 
     public void write(Path path) throws IOException {
-        Files.deleteIfExists(path);
-        Files.createDirectories(path.getParent());
-        Files.createFile(path);
+        resetFile(path);
 
         String properties = readProperties();
 
         Files.write(path, properties.getBytes());
+    }
+
+    private void resetFile(Path path) throws IOException {
+        Files.deleteIfExists(path);
+        Files.createDirectories(path.getParent());
+        Files.createFile(path);
     }
 
     private String readProperties() {

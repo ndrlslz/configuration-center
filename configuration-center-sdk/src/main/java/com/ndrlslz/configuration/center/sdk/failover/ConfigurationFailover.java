@@ -15,8 +15,8 @@ import static java.nio.file.Paths.get;
 
 public class ConfigurationFailover {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationFailover.class);
-    public static final String MEMORY_CACHE_PATH = "configuration-center-failover/memory-cache/configurations.properties";
-    private static final String DISASTER_RECOVERY_PATH = "configuration-center-failover/disaster-recovery/configurations.properties";
+    public static final String MEMORY_CACHE_PATH = "configuration-center-failover/memory-cache/configuration.properties";
+    private static final String DISASTER_RECOVERY_PATH = "configuration-center-failover/disaster-recovery/configuration.properties";
     private static volatile boolean FAILOVER = true;
     private ConfigurationFileReader configurationFileReader;
 
@@ -44,7 +44,10 @@ public class ConfigurationFailover {
 
         properties
                 .stringPropertyNames()
-                .forEach(name -> FailoverStorage.set(name, valueOf(properties.get(name))));
+                .forEach(name -> {
+                    FailoverStorage.set(name, valueOf(properties.get(name)));
+                    LOGGER.info("Store {}={} into FailoverStorage", name, properties.getProperty(name));
+                });
     }
 
     private Properties loadProperties() throws IOException {

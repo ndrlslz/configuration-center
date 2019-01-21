@@ -46,7 +46,7 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
             return valueFromFailover;
         }
 
-        throw new ConfigurationNotFoundException(format("cannot connect zookeeper, and c annot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
+        throw new ConfigurationNotFoundException(format("cannot connect zookeeper, and cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
     }
 
     @Override
