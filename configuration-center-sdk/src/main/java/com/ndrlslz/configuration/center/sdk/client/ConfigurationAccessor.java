@@ -16,15 +16,19 @@ import static java.util.Objects.nonNull;
 
 abstract class ConfigurationAccessor implements ConfigurationOperations {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationAccessor.class);
+    private ConfigurationPersistence configurationPersistence;
 
     ConfigurationAccessor() {
         new ConfigurationFailover().run();
-        new ConfigurationPersistence().run();
+        configurationPersistence = new ConfigurationPersistence();
+        configurationPersistence.run();
     }
 
     abstract String getFromRemote(String name);
 
     abstract void listenRemote(String name, ConfigurationListener configurationListener);
+
+    abstract void closeRemote();
 
     @Override
     public String get(String name) {
@@ -42,7 +46,7 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
             return valueFromFailover;
         }
 
-        throw new ConfigurationNotFoundException(format("Cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
+        throw new ConfigurationNotFoundException(format("cannot connect zookeeper, and c annot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
     }
 
     @Override
@@ -52,7 +56,7 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
         if (!isConnected()) {
             String valueFromFailover = FailoverStorage.get(name);
             if (isNull(valueFromFailover)) {
-                throw new ConfigurationNotFoundException(format("Cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
+                throw new ConfigurationNotFoundException(format("Cannot connect zookeeper, and cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
             }
 
             ZookeeperStorage.setIfAbsent(name, valueFromFailover);
@@ -69,5 +73,12 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
         }
 
         return isNull(value) ? defaultValue : value;
+    }
+
+    @Override
+    public void close() {
+        configurationPersistence.stop();
+
+        closeRemote();
     }
 }

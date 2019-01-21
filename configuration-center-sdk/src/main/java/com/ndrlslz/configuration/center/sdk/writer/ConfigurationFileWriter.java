@@ -17,12 +17,12 @@ public class ConfigurationFileWriter {
         Files.createDirectories(path.getParent());
         Files.createFile(path);
 
-        String properties = readPropertiesFromMemoryToProperties();
+        String properties = readProperties();
 
         Files.write(path, properties.getBytes());
     }
 
-    private String readPropertiesFromMemoryToProperties() {
+    private String readProperties() {
         StringBuilder propertiesBuilder = new StringBuilder();
 
         ZookeeperStorage.forEach((key, value) -> propertiesBuilder

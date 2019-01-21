@@ -65,5 +65,4 @@ public class ConfigurationFailover {
             return new Properties();
         }
     }
-
 }

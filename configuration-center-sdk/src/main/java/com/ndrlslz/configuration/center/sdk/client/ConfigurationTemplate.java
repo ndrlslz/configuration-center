@@ -32,7 +32,7 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
     }
 
     @Override
-    public String getFromRemote(String name) {
+    String getFromRemote(String name) {
         if (isConnected()) {
             try {
                 return configurationCenterClient.getProperty(application, environment, name).getValue();
@@ -47,7 +47,7 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
     }
 
     @Override
-    public void listenRemote(String name, ConfigurationListener configurationListener) {
+    void listenRemote(String name, ConfigurationListener configurationListener) {
         try {
             configurationCenterClient.listenProperty(application, environment, name, node -> {
                 configurationListener.configChanged(node.getValue());
@@ -59,7 +59,7 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
     }
 
     @Override
-    public void close() {
+    public void closeRemote() {
         configurationCenterClient.close();
     }
 
