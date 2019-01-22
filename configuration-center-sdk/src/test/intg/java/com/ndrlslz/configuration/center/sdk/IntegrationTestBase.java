@@ -28,6 +28,8 @@ abstract public class IntegrationTestBase {
                 .connectionString(testingServer.getConnectString())
                 .application(APPLICATION)
                 .environment(ENVIRONMENT)
+                .sessionTimeoutMs(10000)
+                .connectionTimeoutMs(10000)
                 .build();
 
         configurationCenterClient.createApplication(APPLICATION);

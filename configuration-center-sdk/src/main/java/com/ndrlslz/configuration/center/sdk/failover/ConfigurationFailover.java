@@ -2,6 +2,7 @@ package com.ndrlslz.configuration.center.sdk.failover;
 
 import com.ndrlslz.configuration.center.sdk.reader.ConfigurationFileReader;
 import com.ndrlslz.configuration.center.sdk.storage.FailoverStorage;
+import com.ndrlslz.configuration.center.sdk.storage.ZookeeperStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +30,7 @@ public class ConfigurationFailover {
             synchronized (this) {
                 if (FAILOVER) {
                     try {
+                        clearStorage();
                         loadPropertiesIntoFailoverStorage();
                     } catch (IOException e) {
                         LOGGER.error("Failed to load properties into memory", e);
@@ -37,6 +39,11 @@ public class ConfigurationFailover {
                 }
             }
         }
+    }
+
+    private void clearStorage() {
+        FailoverStorage.clear();
+        ZookeeperStorage.clear();
     }
 
     private void loadPropertiesIntoFailoverStorage() throws IOException {

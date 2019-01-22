@@ -2,11 +2,10 @@ package com.ndrlslz.configuration.center.sdk;
 
 import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
 import com.ndrlslz.configuration.center.sdk.exception.ZookeeperNodeNotExistsException;
-import com.ndrlslz.configuration.center.sdk.storage.ZookeeperStorage;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -29,6 +28,15 @@ public class ConfigurationTemplateTest extends IntegrationTestBase {
     }
 
     @Test
+    public void shouldIgnoreDefaultValueWhenGetPropertyGivenPropertyExists() throws ConfigurationCenterException {
+        configurationCenterClient.createProperty(APPLICATION, ENVIRONMENT, "key", "value");
+
+        String value = configurationTemplate.get("key", "default_value");
+
+        assertThat(value, is("value"));
+    }
+
+    @Test
     public void shouldGetPropertyDefaultValueGivenNodeNotExists() {
         String value = configurationTemplate.get("key", "default_value");
 
@@ -40,10 +48,14 @@ public class ConfigurationTemplateTest extends IntegrationTestBase {
         configurationCenterClient.createProperty(APPLICATION, ENVIRONMENT, "version", "1");
         ArrayList<String> result = new ArrayList<>();
 
-        configurationTemplate.listen("version", result::add);
+        CountDownLatch latch = new CountDownLatch(2);
+        configurationTemplate.listen("version", value -> {
+            result.add(value);
+            latch.countDown();
+        });
         configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, "version", "2"
                 , configurationCenterClient.getProperty(APPLICATION, ENVIRONMENT, "version").getVersion());
-        TimeUnit.MILLISECONDS.sleep(100);
+        latch.await();
 
         assertThat(result, hasItems("1", "2"));
     }

@@ -17,4 +17,8 @@ public class ZookeeperStorage {
     public static void forEach(BiConsumer<String, String> action) {
         configurationMap.forEach(action);
     }
+
+    public static void clear() {
+        configurationMap.clear();
+    }
 }

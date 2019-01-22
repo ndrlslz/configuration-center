@@ -1,5 +1,7 @@
 package com.ndrlslz.configuration.center.sdk.reader;
 
+import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
 import org.junit.After;
 import org.junit.Test;
 
@@ -13,12 +15,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ConfigurationFileReaderTest {
-    private static final String FILE_NAME = "configuration-center-sdk/src/test/unit/resources/configurations_read.properties";
+    private static final String FILE_NAME = "configuration-center-failover/test/configurations_read.properties";
+    private static final Path FAILOVER_PATH = Paths.get("configuration-center-failover");
     private ConfigurationFileReader configurationFileReader = new ConfigurationFileReader();
 
     @After
     public void tearDown() throws IOException {
-        Files.deleteIfExists(Paths.get(FILE_NAME));
+        if (Files.exists(FAILOVER_PATH)) {
+            MoreFiles.deleteRecursively(FAILOVER_PATH, RecursiveDeleteOption.ALLOW_INSECURE);
+        }
     }
 
     @Test

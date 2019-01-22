@@ -12,4 +12,8 @@ public class FailoverStorage {
     public static void set(String name, String value) {
         configurationMap.put(name, value);
     }
+
+    public static void clear() {
+        configurationMap.clear();
+    }
 }

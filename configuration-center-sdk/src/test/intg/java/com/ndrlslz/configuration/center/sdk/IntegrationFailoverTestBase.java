@@ -23,8 +23,8 @@ public class IntegrationFailoverTestBase {
     private static final Path FAILOVER_PATH = Paths.get("configuration-center-failover");
     private static final String APPLICATION = "customer-api";
     private static final String ENVIRONMENT = "dev";
-    ConfigurationTemplate configurationTemplate;
     private static TestingServer testingServer;
+    ConfigurationTemplate configurationTemplate;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -42,14 +42,6 @@ public class IntegrationFailoverTestBase {
         }
     }
 
-    void createConfigurationTemplate() {
-        configurationTemplate = new ConfigurationTemplate.Builder()
-                .connectionString(testingServer.getConnectString())
-                .application(APPLICATION)
-                .environment(ENVIRONMENT)
-                .build();
-    }
-
     @After
     public void tearDown() throws IOException {
         if (nonNull(configurationTemplate)) {
@@ -59,6 +51,14 @@ public class IntegrationFailoverTestBase {
         if (Files.exists(FAILOVER_PATH)) {
             MoreFiles.deleteRecursively(FAILOVER_PATH, RecursiveDeleteOption.ALLOW_INSECURE);
         }
+    }
+
+    void createConfigurationTemplate() {
+        configurationTemplate = new ConfigurationTemplate.Builder()
+                .connectionString(testingServer.getConnectString())
+                .application(APPLICATION)
+                .environment(ENVIRONMENT)
+                .build();
     }
 
     private void setupFailoverFlag() throws NoSuchFieldException, IllegalAccessException {

@@ -70,6 +70,7 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
         try {
             value = get(name);
         } catch (ConfigurationSdkException ignored) {
+            LOGGER.debug("Cannot get {} from remote or memory cache file or disaster recovery file, fallback to default value: {}", name, defaultValue);
         }
 
         return isNull(value) ? defaultValue : value;

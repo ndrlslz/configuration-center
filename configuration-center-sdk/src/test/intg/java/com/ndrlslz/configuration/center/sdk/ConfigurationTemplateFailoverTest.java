@@ -6,7 +6,10 @@ import com.ndrlslz.configuration.center.sdk.utils.MemoryCacheFileBuilder;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -24,7 +27,6 @@ public class ConfigurationTemplateFailoverTest extends IntegrationFailoverTestBa
         new MemoryCacheFileBuilder()
                 .property("key", "value1")
                 .create();
-
         createConfigurationTemplate();
 
         String value = configurationTemplate.get("key");
@@ -36,7 +38,6 @@ public class ConfigurationTemplateFailoverTest extends IntegrationFailoverTestBa
         new MemoryCacheFileBuilder()
                 .property("key", "value3")
                 .create();
-
         createConfigurationTemplate();
 
         configurationTemplate.get("key_not_exists");
@@ -75,5 +76,38 @@ public class ConfigurationTemplateFailoverTest extends IntegrationFailoverTestBa
 
         String value = configurationTemplate.get("key");
         assertThat(value, is("disaster-recovery"));
+    }
+
+    @Test
+    public void shouldGetDefaultPropertyGivenBothFileNotExists() {
+        createConfigurationTemplate();
+
+        String value = configurationTemplate.get("key", "default_value");
+        assertThat(value, is("default_value"));
+    }
+
+    @Test
+    public void shouldListenPropertyFromMemoryCacheFile() throws IOException {
+        new MemoryCacheFileBuilder()
+                .property("key", "value")
+                .create();
+        createConfigurationTemplate();
+
+        ArrayList<String> result = new ArrayList<>();
+
+        CountDownLatch latch = new CountDownLatch(1);
+        configurationTemplate.listen("key", value -> {
+            result.add(value);
+            latch.countDown();
+        });
+
+        assertThat(result, hasItem("value"));
+    }
+
+    @Test(expected = ConfigurationNotFoundException.class)
+    public void shouldThrowExceptionWhenListenPropertyGivenBothFileNotExists() {
+        createConfigurationTemplate();
+
+        configurationTemplate.listen("key", System.out::println);
     }
 }

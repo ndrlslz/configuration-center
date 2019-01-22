@@ -20,8 +20,9 @@ import static java.nio.file.Paths.get;
 public class ConfigurationPersistence {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationPersistence.class);
     private static final String CONFIG_FILE_NAME_FORMAT = "%s.%s";
-    private static final int INITIAL_DELAY = 1;
-    private static final int DELAY = 1;
+    private static volatile boolean PERSISTENCE = true;
+    private static final Integer INITIAL_DELAY = 1;
+    private static final Integer DELAY = 1;
     private ConfigurationFileWriter configurationFileWriter;
     private ScheduledExecutorService scheduledExecutorService;
     private AtomicInteger configFileTag = new AtomicInteger();
@@ -33,8 +34,15 @@ public class ConfigurationPersistence {
     }
 
     public void run() {
-        scheduledExecutorService
-                .scheduleWithFixedDelay(this::persistConfigurations, INITIAL_DELAY, DELAY, TimeUnit.MINUTES);
+        if (PERSISTENCE) {
+            synchronized (this) {
+                if (PERSISTENCE) {
+                    scheduledExecutorService
+                            .scheduleWithFixedDelay(this::persistConfigurations, INITIAL_DELAY, DELAY, TimeUnit.MINUTES);
+                    PERSISTENCE = false;
+                }
+            }
+        }
     }
 
     public void stop() {
