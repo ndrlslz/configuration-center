@@ -12,9 +12,9 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.ReflectionUtils;
@@ -32,18 +32,15 @@ import static java.util.Objects.nonNull;
 
 @Configuration
 public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-        implements PriorityOrdered, BeanFactoryAware {
-
+        implements Ordered, BeanFactoryAware {
     private final Log logger = LogFactory.getLog(getClass());
 
     private Class<Config> configAnnotationType = Config.class;
 
-    private static final int order = Ordered.LOWEST_PRECEDENCE - 3;
+    private static final int order = Ordered.LOWEST_PRECEDENCE;
 
     private final Map<String, InjectionMetadata> injectionMetadataCache =
             new ConcurrentHashMap<>(256);
-
-    private ConfigurableListableBeanFactory beanFactory;
 
     private ConfigurationTemplate configurationTemplate;
 
@@ -51,9 +48,8 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
             throw new IllegalArgumentException(
-                    "AutowiredAnnotationBeanPostProcessor requires a ConfigurableListableBeanFactory: " + beanFactory);
+                    "ConfigAnnotationBeanPostProcessor requires a ConfigurableListableBeanFactory: " + beanFactory);
         }
-        this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
         this.configurationTemplate = beanFactory.getBean(ConfigurationTemplate.class);
     }
 
@@ -148,20 +144,28 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
         @Override
         protected void inject(Object bean, String beanName, PropertyValues pvs) throws Throwable {
             Field field = (Field) this.member;
-            String value;
             if (field.isAnnotationPresent(configAnnotationType)) {
                 Config annotation = field.getAnnotation(configAnnotationType);
                 String specifiedName = annotation.value();
-                if (specifiedName.isEmpty()) {
-                    String name = field.getName();
-                    value = configurationTemplate.get(name);
-                } else {
-                    value = configurationTemplate.get(specifiedName);
-                }
+                String propertyName = specifiedName.isEmpty() ? field.getName() : specifiedName;
+                String propertyValue = configurationTemplate.get(propertyName);
                 ReflectionUtils.makeAccessible(field);
 
-                Object result = convert(field, value);
+                Object result = convert(field, propertyValue);
                 field.set(bean, result);
+//
+//                boolean refresh = annotation.refresh();
+//                if (refresh) {
+//                    configurationTemplate.listen(propertyName, updatedValue -> {
+//                        if (!propertyValue.equals(updatedValue)) {
+//                            try {
+//                                field.set(bean, convert(field, updatedValue));
+//                            } catch (IllegalAccessException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
+//                }
             }
         }
 

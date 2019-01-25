@@ -6,10 +6,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Config {
-
-    /**
-     * The actual value from zookeeper: e.g. "${name}".
-     */
     String value() default "";
 
+    boolean refresh() default false;
 }

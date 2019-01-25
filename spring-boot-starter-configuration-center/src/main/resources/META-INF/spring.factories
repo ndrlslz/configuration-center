@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.ndrlslz.configuration.center.spring.configuration.ConfigTemplateConfiguration,\
+  com.ndrlslz.configuration.center.spring.configuration.ConfigAnnotationBeanPostProcessor
