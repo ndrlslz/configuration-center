@@ -120,7 +120,15 @@ public class ZookeeperClient {
         });
 
         nodeCache.start();
-        nodeCacheMap.put(path, nodeCache);
+        nodeCacheMap.putIfAbsent(path, nodeCache);
+    }
+
+    public void unListen(String path) throws Exception {
+        NodeCache nodeCache = nodeCacheMap.get(path);
+        if (nonNull(nodeCache)) {
+            nodeCache.close();
+            nodeCacheMap.remove(path);
+        }
     }
 
     private void closeNodeCache() {
@@ -132,6 +140,8 @@ public class ZookeeperClient {
                 LOGGER.error(e.getMessage(), e);
             }
         });
+
+        nodeCacheMap.clear();
     }
 
     public static class Builder {

@@ -157,4 +157,27 @@ public class ZookeeperClientTest extends ZookeeperClientBaseIntegrationTest {
 
         assertThat(result, hasItems("one", "two", "three", "four"));
     }
+
+    @Test
+    public void shouldListenSameNodeMultipleTimes() throws Exception {
+        List<String> first = new ArrayList<>();
+        List<String> second = new ArrayList<>();
+
+        zookeeperClient.listen(PATH, node -> first.add(node.getValue()));
+        zookeeperClient.listen(PATH, node -> second.add(node.getValue()));
+
+        zookeeperClient.createNode(PATH, "one");
+        TimeUnit.MILLISECONDS.sleep(100);
+        zookeeperClient.updateNode(PATH, "two", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+        zookeeperClient.updateNode(PATH, "three", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+        zookeeperClient.updateNode(PATH, "four", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+        zookeeperClient.deleteNode(PATH);
+
+        assertThat(first, hasItems("one", "two", "three", "four"));
+        assertThat(second, hasItems("one", "two", "three", "four"));
+
+    }
 }

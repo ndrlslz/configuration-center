@@ -12,4 +12,6 @@ public interface ConfigurationOperations {
     void listen(String name, ConfigurationListener configurationListener);
 
     void close();
+
+    void unListen(String name);
 }

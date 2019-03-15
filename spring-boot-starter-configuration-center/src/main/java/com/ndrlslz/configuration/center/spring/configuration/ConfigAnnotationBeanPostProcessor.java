@@ -2,6 +2,8 @@ package com.ndrlslz.configuration.center.spring.configuration;
 
 import com.ndrlslz.configuration.center.sdk.client.ConfigurationTemplate;
 import com.ndrlslz.configuration.center.spring.annotation.Config;
+import com.ndrlslz.configuration.center.spring.config.AutoUpdateRegister;
+import com.ndrlslz.configuration.center.spring.util.TypeConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -9,10 +11,10 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -21,6 +23,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.beans.PropertyDescriptor;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -43,6 +46,7 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
             new ConcurrentHashMap<>(256);
 
     private ConfigurationTemplate configurationTemplate;
+    private AutoUpdateRegister autoUpdateRegister;
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -51,12 +55,14 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
                     "ConfigAnnotationBeanPostProcessor requires a ConfigurableListableBeanFactory: " + beanFactory);
         }
         this.configurationTemplate = beanFactory.getBean(ConfigurationTemplate.class);
+        this.autoUpdateRegister = beanFactory.getBean(AutoUpdateRegister.class);
     }
 
     @Override
     public PropertyValues postProcessPropertyValues(
             PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
         InjectionMetadata metadata = findConfigMetadata(beanName, bean.getClass(), pvs);
+
         try {
             metadata.inject(bean, beanName, pvs);
         } catch (BeanCreationException ex) {
@@ -149,39 +155,18 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
                 String specifiedName = annotation.value();
                 String propertyName = specifiedName.isEmpty() ? field.getName() : specifiedName;
                 String propertyValue = configurationTemplate.get(propertyName);
+
                 ReflectionUtils.makeAccessible(field);
-
-                Object result = convert(field, propertyValue);
+                Object result = TypeConverter.convert(field, propertyValue);
                 field.set(bean, result);
-//
-//                boolean refresh = annotation.refresh();
-//                if (refresh) {
-//                    configurationTemplate.listen(propertyName, updatedValue -> {
-//                        if (!propertyValue.equals(updatedValue)) {
-//                            try {
-//                                field.set(bean, convert(field, updatedValue));
-//                            } catch (IllegalAccessException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    });
-//                }
-            }
-        }
 
-        private Object convert(Field field, String value) {
-            Object result;
-            Class<?> type = field.getType();
-            if (type == String.class) {
-                result = value;
-            } else if (type == Integer.class || type == int.class) {
-                result = Integer.valueOf(value);
-            } else if (type == Boolean.class || type == boolean.class) {
-                result = Boolean.valueOf(value);
-            } else {
-                throw new RuntimeException("type not supported");
+                //TODO create a ConfigValue object to refresh value, and use WeakRef to ref bean.
+                boolean refresh = annotation.refresh();
+
+                if (refresh) {
+                    autoUpdateRegister.register(bean, field, propertyName);
+                }
             }
-            return result;
         }
     }
 }

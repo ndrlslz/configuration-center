@@ -41,6 +41,10 @@ dependencies {
     testCompile('org.apache.curator:curator-test:4.0.1')
 }
 
+bootRepackage {
+    enabled = false
+}
+
 configurations {
     integrationTestCompile.extendsFrom testCompile
     integrationTestRuntime.extendsFrom testRuntime

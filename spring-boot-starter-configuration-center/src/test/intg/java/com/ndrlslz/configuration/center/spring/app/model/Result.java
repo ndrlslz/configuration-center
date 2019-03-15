@@ -11,6 +11,10 @@ public class Result {
 
     private int age;
 
+    private String secondName;
+
+    private int secondAge;
+
     private String app;
 
     public String getApp() {
@@ -39,6 +43,22 @@ public class Result {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public String getSecondName() {
+        return secondName;
+    }
+
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
+    }
+
+    public int getSecondAge() {
+        return secondAge;
+    }
+
+    public void setSecondAge(int secondAge) {
+        this.secondAge = secondAge;
     }
 
     public String getAddress() {

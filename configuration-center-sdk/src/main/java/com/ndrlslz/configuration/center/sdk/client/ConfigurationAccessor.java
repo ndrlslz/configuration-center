@@ -30,6 +30,8 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
 
     abstract void closeRemote();
 
+    abstract void unListenRemote(String name);
+
     @Override
     public String get(String name) {
         String valueFromRemote = getFromRemote(name);
@@ -62,6 +64,11 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
             ZookeeperStorage.setIfAbsent(name, valueFromFailover);
             configurationListener.configChanged(valueFromFailover);
         }
+    }
+
+    @Override
+    public void unListen(String name) {
+        unListenRemote(name);
     }
 
     @Override

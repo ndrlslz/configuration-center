@@ -59,9 +59,19 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
     }
 
     @Override
+    void unListenRemote(String name) {
+        try {
+            configurationCenterClient.unListenProperty(application, environment, name);
+        } catch (ConfigurationCenterException e) {
+            LOGGER.error(e.getMessage(), e.getCause());
+        }
+    }
+
+    @Override
     public void closeRemote() {
         configurationCenterClient.close();
     }
+
 
     public static class Builder {
         private String application;

@@ -1,8 +1,10 @@
 package com.ndrlslz.configuration.center.spring.app.configuration;
 
 import com.ndrlslz.configuration.center.spring.annotation.Config;
+import org.springframework.context.annotation.Configuration;
 
-public class ParentConfiguration {
+@Configuration
+public class SecondConfiguration {
     @Config(value = "name", refresh = true)
     private String name;
 
@@ -16,4 +18,5 @@ public class ParentConfiguration {
     public int getAge() {
         return age;
     }
+
 }

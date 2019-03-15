@@ -140,6 +140,12 @@ public class ConfigurationCenterClient {
         throwExceptionIfFail(result);
     }
 
+    public void unListenProperty(String application, String environment, String property) throws ConfigurationCenterException {
+        AsyncResult result = async(() -> zookeeperClient.unListen(pathOf(application, environment, property)));
+
+        throwExceptionIfFail(result);
+    }
+
     private void throwExceptionIfFail(AsyncResult result) throws ConfigurationCenterException {
         if (result.failed()) {
             Exception exception = result.getException();
