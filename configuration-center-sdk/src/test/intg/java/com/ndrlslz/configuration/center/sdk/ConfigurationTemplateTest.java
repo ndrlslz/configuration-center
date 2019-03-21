@@ -49,7 +49,7 @@ public class ConfigurationTemplateTest extends IntegrationTestBase {
         ArrayList<String> result = new ArrayList<>();
 
         CountDownLatch latch = new CountDownLatch(2);
-        configurationTemplate.listen("version", value -> {
+        configurationTemplate.listen(this, "version", value -> {
             result.add(value);
             latch.countDown();
         });

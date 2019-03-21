@@ -9,9 +9,9 @@ public interface ConfigurationOperations {
 
     String get(String name);
 
-    void listen(String name, ConfigurationListener configurationListener);
+    void listen(Object object, String name, ConfigurationListener configurationListener);
 
     void close();
 
-    void unListen(String name);
+    void unListen(Object object, String name);
 }

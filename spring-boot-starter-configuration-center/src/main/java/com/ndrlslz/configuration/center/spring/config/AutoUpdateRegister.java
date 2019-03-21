@@ -21,7 +21,7 @@ public class AutoUpdateRegister {
         WeakReference<Object> beanRef = new WeakReference<>(bean);
 
         //TODO there is a issue if two bean use same property
-        configurationTemplate.listen(propertyName, updatedValue -> {
+        configurationTemplate.listen(beanRef, propertyName, updatedValue -> {
             Object originalBean = beanRef.get();
             if (originalBean != null) {
                 try {
@@ -30,7 +30,7 @@ public class AutoUpdateRegister {
                     e.printStackTrace();
                 }
             } else {
-                configurationTemplate.unListen(propertyName);
+                configurationTemplate.unListen(this, propertyName);
             }
         });
     }

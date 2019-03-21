@@ -26,11 +26,11 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
 
     abstract String getFromRemote(String name);
 
-    abstract void listenRemote(String name, ConfigurationListener configurationListener);
+    abstract void listenRemote(Object object, String name, ConfigurationListener configurationListener);
 
     abstract void closeRemote();
 
-    abstract void unListenRemote(String name);
+    abstract void unListenRemote(Object object, String name);
 
     @Override
     public String get(String name) {
@@ -52,8 +52,8 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
     }
 
     @Override
-    public void listen(String name, ConfigurationListener configurationListener) {
-        listenRemote(name, configurationListener);
+    public void listen(Object object, String name, ConfigurationListener configurationListener) {
+        listenRemote(object, name, configurationListener);
 
         if (!isConnected()) {
             String valueFromFailover = FailoverStorage.get(name);
@@ -67,8 +67,8 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
     }
 
     @Override
-    public void unListen(String name) {
-        unListenRemote(name);
+    public void unListen(Object object, String name) {
+        unListenRemote(object, name);
     }
 
     @Override

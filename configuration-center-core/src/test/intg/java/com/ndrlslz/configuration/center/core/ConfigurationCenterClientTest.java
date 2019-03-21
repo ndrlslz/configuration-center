@@ -383,7 +383,7 @@ public class ConfigurationCenterClientTest extends ConfigurationCenterBaseIntegr
     public void shouldListenProperty() throws ConfigurationCenterException, InterruptedException {
         List<String> result = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(3);
-        configurationCenterClient.listenProperty(CUSTOMER_API, DEV, "key", node -> {
+        configurationCenterClient.listenProperty(this, CUSTOMER_API, DEV, "key", node -> {
             result.add(node.getValue());
             latch.countDown();
         });

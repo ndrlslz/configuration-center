@@ -46,10 +46,9 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
         return null;
     }
 
-    @Override
-    void listenRemote(String name, ConfigurationListener configurationListener) {
+    void listenRemote(Object object, String name, ConfigurationListener configurationListener) {
         try {
-            configurationCenterClient.listenProperty(application, environment, name, node -> {
+            configurationCenterClient.listenProperty(object, application, environment, name, node -> {
                 configurationListener.configChanged(node.getValue());
                 ZookeeperStorage.set(name, node.getValue());
             });
@@ -59,9 +58,9 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
     }
 
     @Override
-    void unListenRemote(String name) {
+    void unListenRemote(Object object, String name) {
         try {
-            configurationCenterClient.unListenProperty(application, environment, name);
+            configurationCenterClient.unListenProperty(object, application, environment, name);
         } catch (ConfigurationCenterException e) {
             LOGGER.error(e.getMessage(), e.getCause());
         }

@@ -143,7 +143,7 @@ public class ZookeeperClientTest extends ZookeeperClientBaseIntegrationTest {
     public void shouldListenNode() throws Exception {
         List<String> result = new ArrayList<>();
 
-        zookeeperClient.listen(PATH, node -> result.add(node.getValue()));
+        zookeeperClient.listen(this, PATH, node -> result.add(node.getValue()));
 
         zookeeperClient.createNode(PATH, "one");
         TimeUnit.MILLISECONDS.sleep(100);
@@ -163,8 +163,8 @@ public class ZookeeperClientTest extends ZookeeperClientBaseIntegrationTest {
         List<String> first = new ArrayList<>();
         List<String> second = new ArrayList<>();
 
-        zookeeperClient.listen(PATH, node -> first.add(node.getValue()));
-        zookeeperClient.listen(PATH, node -> second.add(node.getValue()));
+        zookeeperClient.listen(new Object(), PATH, node -> first.add(node.getValue()));
+        zookeeperClient.listen(new Object(), PATH, node -> second.add(node.getValue()));
 
         zookeeperClient.createNode(PATH, "one");
         TimeUnit.MILLISECONDS.sleep(100);
@@ -179,5 +179,27 @@ public class ZookeeperClientTest extends ZookeeperClientBaseIntegrationTest {
         assertThat(first, hasItems("one", "two", "three", "four"));
         assertThat(second, hasItems("one", "two", "three", "four"));
 
+    }
+
+    @Test
+    public void shouldUnListenNode() throws Exception {
+        List<String> result = new ArrayList<>();
+
+        zookeeperClient.listen(this, PATH, node -> result.add(node.getValue()));
+
+        zookeeperClient.createNode(PATH, "one");
+        TimeUnit.MILLISECONDS.sleep(100);
+        zookeeperClient.updateNode(PATH, "two", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+
+        assertThat(result, hasItems("one", "two"));
+
+        zookeeperClient.unListen(this, PATH);
+        TimeUnit.MILLISECONDS.sleep(100);
+
+        zookeeperClient.updateNode(PATH, "three", zookeeperClient.getNode(PATH).getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+
+        assertThat(result, not(hasItem("three")));
     }
 }

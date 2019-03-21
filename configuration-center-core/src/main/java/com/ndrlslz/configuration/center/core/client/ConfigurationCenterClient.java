@@ -134,14 +134,14 @@ public class ConfigurationCenterClient {
                 .build();
     }
 
-    public void listenProperty(String application, String environment, String property, NodeListener nodeListener) throws ConfigurationCenterException {
-        AsyncResult result = async(() -> zookeeperClient.listen(pathOf(application, environment, property), nodeListener));
+    public void listenProperty(Object object, String application, String environment, String property, NodeListener nodeListener) throws ConfigurationCenterException {
+        AsyncResult result = async(() -> zookeeperClient.listen(object, pathOf(application, environment, property), nodeListener));
 
         throwExceptionIfFail(result);
     }
 
-    public void unListenProperty(String application, String environment, String property) throws ConfigurationCenterException {
-        AsyncResult result = async(() -> zookeeperClient.unListen(pathOf(application, environment, property)));
+    public void unListenProperty(Object object, String application, String environment, String property) throws ConfigurationCenterException {
+        AsyncResult result = async(() -> zookeeperClient.unListen(object, pathOf(application, environment, property)));
 
         throwExceptionIfFail(result);
     }

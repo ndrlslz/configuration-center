@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.nonNull;
 
 public class ZookeeperClient {
@@ -31,6 +32,7 @@ public class ZookeeperClient {
     public static final String NAMESPACE = "configuration-center";
     private static final boolean DEFAULT_FAST_FAIL = true;
     private static final ConcurrentHashMap<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
+    private static final String nodeCacheKey = "%s_%s";
     private CuratorFramework curatorFramework;
 
     private ZookeeperClient(CuratorFramework curatorFramework) {
@@ -103,7 +105,9 @@ public class ZookeeperClient {
                 .forPath(path);
     }
 
-    public void listen(String path, NodeListener nodeListener) throws Exception {
+    public void listen(Object object, String path, NodeListener nodeListener) throws Exception {
+        checkNotNull(object, "object cannot be null");
+
         NodeCache nodeCache = new NodeCache(curatorFramework, path);
 
         nodeCache.getListenable().addListener(() -> {
@@ -120,14 +124,20 @@ public class ZookeeperClient {
         });
 
         nodeCache.start();
-        nodeCacheMap.putIfAbsent(path, nodeCache);
+
+        String key = String.format(nodeCacheKey, System.identityHashCode(object), path);
+        nodeCacheMap.putIfAbsent(key, nodeCache);
     }
 
-    public void unListen(String path) throws Exception {
-        NodeCache nodeCache = nodeCacheMap.get(path);
+    public void unListen(Object object, String path) throws Exception {
+        checkNotNull(object, "object cannot be null");
+
+        String key = String.format(nodeCacheKey, System.identityHashCode(object), path);
+
+        NodeCache nodeCache = nodeCacheMap.get(key);
         if (nonNull(nodeCache)) {
             nodeCache.close();
-            nodeCacheMap.remove(path);
+            nodeCacheMap.remove(key);
         }
     }
 
@@ -135,7 +145,7 @@ public class ZookeeperClient {
         nodeCacheMap.forEach((key, nodeCache) -> {
             try {
                 nodeCache.close();
-                LOGGER.debug("Close node cache for path /{}{}", NAMESPACE, key);
+                LOGGER.debug("Close node cache for key {}", key);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
             }

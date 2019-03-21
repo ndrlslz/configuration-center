@@ -96,7 +96,7 @@ public class ConfigurationTemplateFailoverTest extends IntegrationFailoverTestBa
         ArrayList<String> result = new ArrayList<>();
 
         CountDownLatch latch = new CountDownLatch(1);
-        configurationTemplate.listen("key", value -> {
+        configurationTemplate.listen(this, "key", value -> {
             result.add(value);
             latch.countDown();
         });
@@ -108,6 +108,6 @@ public class ConfigurationTemplateFailoverTest extends IntegrationFailoverTestBa
     public void shouldThrowExceptionWhenListenPropertyGivenBothFileNotExists() {
         createConfigurationTemplate();
 
-        configurationTemplate.listen("key", System.out::println);
+        configurationTemplate.listen(this, "key", System.out::println);
     }
 }
