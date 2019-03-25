@@ -3,7 +3,7 @@ package com.ndrlslz.configuration.center.spring.configuration;
 import com.ndrlslz.configuration.center.sdk.client.ConfigurationTemplate;
 import com.ndrlslz.configuration.center.spring.annotation.Config;
 import com.ndrlslz.configuration.center.spring.config.AutoUpdateRegister;
-import com.ndrlslz.configuration.center.spring.util.TypeConverter;
+import com.ndrlslz.configuration.center.spring.model.SpringConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -11,7 +11,6 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
@@ -23,7 +22,6 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.beans.PropertyDescriptor;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -148,23 +146,20 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
         }
 
         @Override
-        protected void inject(Object bean, String beanName, PropertyValues pvs) throws Throwable {
+        protected void inject(Object bean, String beanName, PropertyValues pvs) {
             Field field = (Field) this.member;
             if (field.isAnnotationPresent(configAnnotationType)) {
                 Config annotation = field.getAnnotation(configAnnotationType);
                 String specifiedName = annotation.value();
                 String propertyName = specifiedName.isEmpty() ? field.getName() : specifiedName;
+
+                SpringConfig springConfig = new SpringConfig(bean, field, propertyName);
                 String propertyValue = configurationTemplate.get(propertyName);
 
-                ReflectionUtils.makeAccessible(field);
-                Object result = TypeConverter.convert(field, propertyValue);
-                field.set(bean, result);
+                springConfig.updateValue(propertyValue);
 
-                //TODO create a ConfigValue object to refresh value, and use WeakRef to ref bean.
-                boolean refresh = annotation.refresh();
-
-                if (refresh) {
-                    autoUpdateRegister.register(bean, field, propertyName);
+                if (annotation.refresh()) {
+                    autoUpdateRegister.register(springConfig);
                 }
             }
         }

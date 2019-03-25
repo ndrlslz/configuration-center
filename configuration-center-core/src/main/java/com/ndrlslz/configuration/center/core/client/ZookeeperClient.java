@@ -125,18 +125,22 @@ public class ZookeeperClient {
 
         nodeCache.start();
 
-        String key = String.format(nodeCacheKey, System.identityHashCode(object), path);
+        String key = nodeCacheKey(object, path);
+
         nodeCacheMap.putIfAbsent(key, nodeCache);
+        LOGGER.debug("add node cache for key {}", key);
     }
 
     public void unListen(Object object, String path) throws Exception {
         checkNotNull(object, "object cannot be null");
 
-        String key = String.format(nodeCacheKey, System.identityHashCode(object), path);
+        String key = nodeCacheKey(object, path);
 
         NodeCache nodeCache = nodeCacheMap.get(key);
         if (nonNull(nodeCache)) {
             nodeCache.close();
+            LOGGER.debug("Close node cache for key {}", key);
+
             nodeCacheMap.remove(key);
         }
     }
@@ -152,6 +156,10 @@ public class ZookeeperClient {
         });
 
         nodeCacheMap.clear();
+    }
+
+    private String nodeCacheKey(Object object, String path) {
+        return String.format(nodeCacheKey, System.identityHashCode(object), path);
     }
 
     public static class Builder {

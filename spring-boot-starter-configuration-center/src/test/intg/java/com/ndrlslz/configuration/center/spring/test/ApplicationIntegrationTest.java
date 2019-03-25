@@ -28,15 +28,22 @@ public class ApplicationIntegrationTest extends IntegrationTestBase {
                 .get("/coder")
                 .then()
                 .statusCode(200)
-                .body("name", is("Tom"));
+                .body("name", is("Tom"))
+                .body("app", is("customer-api"));
 
-        configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, "name", "Nick",
-                configurationCenterClient.getProperty(APPLICATION, ENVIRONMENT, "name").getVersion());
+        updateProperty("name", "Nick");
+        updateProperty("app", "order-api");
 
         when()
                 .get("/coder")
                 .then()
                 .statusCode(200)
-                .body("name", is("Nick"));
+                .body("name", is("Nick"))
+                .body("app", is("order-api"));
+    }
+
+    private void updateProperty(String name, String value) throws ConfigurationCenterException {
+        configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, name, value,
+                configurationCenterClient.getProperty(APPLICATION, ENVIRONMENT, name).getVersion());
     }
 }

@@ -1,9 +1,9 @@
 package com.ndrlslz.configuration.center.spring.app.configuration;
 
 import com.ndrlslz.configuration.center.spring.annotation.Config;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
 
-@Configuration
+@Service
 public class SecondConfiguration {
     @Config(value = "name", refresh = true)
     private String name;

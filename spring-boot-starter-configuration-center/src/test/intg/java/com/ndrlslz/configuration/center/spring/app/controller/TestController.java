@@ -22,6 +22,7 @@ public class TestController {
     @RequestMapping("/coder")
     public Result coder() {
         Result result = new Result();
+
         result.setAddress(childConfiguration.getAddress());
         result.setJavaer(childConfiguration.isJavaer());
         result.setEmailAddress(childConfiguration.getEmailAddress());
@@ -30,6 +31,7 @@ public class TestController {
         result.setApp(app);
         result.setSecondAge(secondConfiguration.getAge());
         result.setSecondName(secondConfiguration.getName());
+
         return result;
     }
 }

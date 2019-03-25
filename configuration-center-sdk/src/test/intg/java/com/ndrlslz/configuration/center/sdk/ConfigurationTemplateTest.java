@@ -5,10 +5,9 @@ import com.ndrlslz.configuration.center.sdk.exception.ZookeeperNodeNotExistsExce
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ConfigurationTemplateTest extends IntegrationTestBase {
@@ -48,15 +47,38 @@ public class ConfigurationTemplateTest extends IntegrationTestBase {
         configurationCenterClient.createProperty(APPLICATION, ENVIRONMENT, "version", "1");
         ArrayList<String> result = new ArrayList<>();
 
-        CountDownLatch latch = new CountDownLatch(2);
-        configurationTemplate.listen(this, "version", value -> {
-            result.add(value);
-            latch.countDown();
-        });
+        configurationTemplate.listen(this, "version", result::add);
+
+        TimeUnit.MILLISECONDS.sleep(100);
         configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, "version", "2"
                 , configurationCenterClient.getProperty(APPLICATION, ENVIRONMENT, "version").getVersion());
-        latch.await();
+        TimeUnit.MILLISECONDS.sleep(100);
+        configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, "version", "3"
+                , configurationCenterClient.getProperty(APPLICATION, ENVIRONMENT, "version").getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+
+        assertThat(result, hasItems("1", "2", "3"));
+    }
+
+    @Test
+    public void shouldUnListenProperty() throws ConfigurationCenterException, InterruptedException {
+        configurationCenterClient.createProperty(APPLICATION, ENVIRONMENT, "version", "1");
+        ArrayList<String> result = new ArrayList<>();
+
+        configurationTemplate.listen(this, "version", result::add);
+
+        TimeUnit.MILLISECONDS.sleep(100);
+        configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, "version", "2"
+                , configurationCenterClient.getProperty(APPLICATION, ENVIRONMENT, "version").getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
+
+        configurationTemplate.unListen(this, "version");
+
+        configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, "version", "3"
+                , configurationCenterClient.getProperty(APPLICATION, ENVIRONMENT, "version").getVersion());
+        TimeUnit.MILLISECONDS.sleep(100);
 
         assertThat(result, hasItems("1", "2"));
+        assertThat(result, not(hasItem("3")));
     }
 }
