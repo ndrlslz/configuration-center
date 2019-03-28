@@ -4,6 +4,8 @@ import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterExcept
 import org.junit.Test;
 
 
+import java.util.concurrent.TimeUnit;
+
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.CoreMatchers.is;
 
@@ -29,10 +31,37 @@ public class ApplicationIntegrationTest extends IntegrationTestBase {
                 .then()
                 .statusCode(200)
                 .body("name", is("Tom"))
-                .body("app", is("customer-api"));
+                .body("app", is("customer-api"))
+                .body("address", is("TianFu Street"));
 
         updateProperty("name", "Nick");
         updateProperty("app", "order-api");
+        updateProperty("address", "YinTai City");
+
+        when()
+                .get("/coder")
+                .then()
+                .statusCode(200)
+                .body("name", is("Nick"))
+                .body("app", is("order-api"))
+                .body("address", is("YinTai City"));
+    }
+
+    @Test
+    public void shouldReconnectZookeeperAndListenProperties() throws Exception {
+        when()
+                .get("/coder")
+                .then()
+                .statusCode(200)
+                .body("name", is("Tom"))
+                .body("app", is("customer-api"));
+
+        testingServer.restart();
+
+        updateProperty("name", "Nick");
+        updateProperty("app", "order-api");
+
+        TimeUnit.SECONDS.sleep(1);
 
         when()
                 .get("/coder")
@@ -41,6 +70,7 @@ public class ApplicationIntegrationTest extends IntegrationTestBase {
                 .body("name", is("Nick"))
                 .body("app", is("order-api"));
     }
+
 
     private void updateProperty(String name, String value) throws ConfigurationCenterException {
         configurationCenterClient.updateProperty(APPLICATION, ENVIRONMENT, name, value,

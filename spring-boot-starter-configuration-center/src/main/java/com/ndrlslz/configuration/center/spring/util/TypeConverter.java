@@ -1,11 +1,8 @@
 package com.ndrlslz.configuration.center.spring.util;
 
-import java.lang.reflect.Field;
-
 public class TypeConverter {
-    public static Object convert(Field field, String value) {
+    public static Object convert(String value, Class<?> type) {
         Object result;
-        Class<?> type = field.getType();
         if (type == String.class) {
             result = value;
         } else if (type == Integer.class || type == int.class) {

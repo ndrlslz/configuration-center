@@ -3,6 +3,8 @@ package com.ndrlslz.configuration.center.spring.configuration;
 import com.ndrlslz.configuration.center.sdk.client.ConfigurationTemplate;
 import com.ndrlslz.configuration.center.spring.annotation.Config;
 import com.ndrlslz.configuration.center.spring.config.AutoUpdateRegister;
+import com.ndrlslz.configuration.center.spring.exception.ConfigValueMissingException;
+import com.ndrlslz.configuration.center.spring.exception.ConfigurationCenterSpringException;
 import com.ndrlslz.configuration.center.spring.model.SpringConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,9 +24,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,6 +132,19 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
                 }
             });
 
+            ReflectionUtils.doWithLocalMethods(targetClass, method -> {
+                AnnotationAttributes ann = findConfigAnnotation(method);
+                if (nonNull(ann)) {
+                    if (Modifier.isStatic(method.getModifiers())) {
+                        if (logger.isWarnEnabled()) {
+                            logger.warn("Config annotation is not supported on static method: " + method);
+                        }
+                        return;
+                    }
+                    currElements.add(new ConfigMethodElement(method));
+                }
+            });
+
             elements.addAll(0, currElements);
             targetClass = targetClass.getSuperclass();
         }
@@ -148,19 +161,54 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
         @Override
         protected void inject(Object bean, String beanName, PropertyValues pvs) {
             Field field = (Field) this.member;
-            if (field.isAnnotationPresent(configAnnotationType)) {
-                Config annotation = field.getAnnotation(configAnnotationType);
-                String specifiedName = annotation.value();
-                String propertyName = specifiedName.isEmpty() ? field.getName() : specifiedName;
+            Config annotation = field.getAnnotation(configAnnotationType);
+            String specifiedName = annotation.value();
+            String propertyName = specifiedName.isEmpty() ? field.getName() : specifiedName;
 
-                SpringConfig springConfig = new SpringConfig(bean, field, propertyName);
-                String propertyValue = configurationTemplate.get(propertyName);
+            SpringConfig springConfig = new SpringConfig(bean, field, propertyName);
+            String propertyValue = configurationTemplate.get(propertyName);
 
-                springConfig.updateValue(propertyValue);
+            springConfig.updateValue(propertyValue);
 
-                if (annotation.refresh()) {
-                    autoUpdateRegister.register(springConfig);
-                }
+            if (annotation.refresh()) {
+                autoUpdateRegister.register(springConfig);
+            }
+        }
+    }
+
+    private class ConfigMethodElement extends InjectionMetadata.InjectedElement {
+
+        ConfigMethodElement(Method method) {
+            super(method, null);
+        }
+
+        @Override
+        protected void inject(Object bean, String beanName, PropertyValues pvs) {
+            Method method = (Method) this.member;
+            Parameter[] parameters = method.getParameters();
+
+            Config annotation = method.getAnnotation(configAnnotationType);
+
+            String propertyName = annotation.value();
+
+            if (propertyName.isEmpty()) {
+                throw new ConfigValueMissingException(String.format("@Config value cannot be null for method %s.%s",
+                        bean.getClass().getName(), method.getName()));
+            }
+
+            if (parameters.length != 1) {
+                throw new ConfigurationCenterSpringException(String.format("since apply @Config, should only have one parameter for method %s.%s",
+                        bean.getClass().getName(), method.getName()));
+            }
+
+            SpringConfig springConfig = new SpringConfig(bean, method, parameters[0].getType(), propertyName);
+
+            String propertyValue = configurationTemplate.get(propertyName);
+
+            springConfig.updateValue(propertyValue);
+
+            if (annotation.refresh()) {
+                autoUpdateRegister.register(springConfig);
             }
         }
     }

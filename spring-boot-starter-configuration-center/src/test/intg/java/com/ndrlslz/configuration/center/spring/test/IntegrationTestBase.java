@@ -24,7 +24,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 public abstract class IntegrationTestBase implements InitializingBean {
     static final String APPLICATION = "customer-api";
     static final String ENVIRONMENT = "dev";
-    private static TestingServer testingServer;
+    static TestingServer testingServer;
     static ConfigurationCenterClient configurationCenterClient;
 
     @LocalServerPort
