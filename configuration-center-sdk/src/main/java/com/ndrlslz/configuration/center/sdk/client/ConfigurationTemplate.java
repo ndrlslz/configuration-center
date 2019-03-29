@@ -6,12 +6,17 @@ import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterExcept
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.sdk.exception.ZookeeperNodeNotExistsException;
 import com.ndrlslz.configuration.center.sdk.listener.ConfigurationListener;
+import com.ndrlslz.configuration.center.sdk.model.ConfigListenerRecord;
 import com.ndrlslz.configuration.center.sdk.storage.ZookeeperStorage;
+import org.apache.curator.framework.state.ConnectionState;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.ref.WeakReference;
+
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
 public class ConfigurationTemplate extends ConfigurationAccessor {
@@ -24,6 +29,8 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
         this.application = builder.application;
         this.environment = builder.environment;
         this.configurationCenterClient = builder.configurationCenterClient;
+
+        listenConfigOnceReconnectRemote();
     }
 
     @Override
@@ -71,6 +78,29 @@ public class ConfigurationTemplate extends ConfigurationAccessor {
         configurationCenterClient.close();
     }
 
+    private void listenConfigOnceReconnectRemote() {
+        configurationCenterClient.listenConnectionState((client, newState) -> reListenConfig(newState));
+    }
+
+    private void reListenConfig(ConnectionState newState) {
+        if (newState.isConnected()) {
+            while (!configListenerRecordsQueue.isEmpty()) {
+                ConfigListenerRecord configListenerRecord = configListenerRecordsQueue.poll();
+                if (nonNull(configListenerRecord)) {
+                    Object object = configListenerRecord.getObject();
+                    if (object instanceof WeakReference) {
+                        WeakReference beanRef = (WeakReference) object;
+                        if (beanRef.get() == null) {
+                            continue;
+                        }
+                    }
+
+                    listenRemote(object, configListenerRecord.getProperty(),
+                            configListenerRecord.getConfigurationListener());
+                }
+            }
+        }
+    }
 
     public static class Builder {
         private String application;

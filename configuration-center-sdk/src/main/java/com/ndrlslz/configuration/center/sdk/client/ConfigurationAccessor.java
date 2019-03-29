@@ -4,11 +4,14 @@ import com.ndrlslz.configuration.center.sdk.exception.ConfigurationNotFoundExcep
 import com.ndrlslz.configuration.center.sdk.exception.ConfigurationSdkException;
 import com.ndrlslz.configuration.center.sdk.failover.ConfigurationFailover;
 import com.ndrlslz.configuration.center.sdk.listener.ConfigurationListener;
+import com.ndrlslz.configuration.center.sdk.model.ConfigListenerRecord;
 import com.ndrlslz.configuration.center.sdk.persistence.ConfigurationPersistence;
 import com.ndrlslz.configuration.center.sdk.storage.FailoverStorage;
 import com.ndrlslz.configuration.center.sdk.storage.ZookeeperStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ArrayBlockingQueue;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -16,12 +19,15 @@ import static java.util.Objects.nonNull;
 
 abstract class ConfigurationAccessor implements ConfigurationOperations {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationAccessor.class);
+    private static final Integer QUEUE_LENGTH = 100;
     private ConfigurationPersistence configurationPersistence;
+    ArrayBlockingQueue<ConfigListenerRecord> configListenerRecordsQueue;
 
     ConfigurationAccessor() {
         new ConfigurationFailover().run();
         configurationPersistence = new ConfigurationPersistence();
         configurationPersistence.run();
+        configListenerRecordsQueue = new ArrayBlockingQueue<>(QUEUE_LENGTH);
     }
 
     abstract String getFromRemote(String name);
@@ -53,9 +59,9 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
 
     @Override
     public void listen(Object object, String name, ConfigurationListener configurationListener) {
-        listenRemote(object, name, configurationListener);
-
-        if (!isConnected()) {
+        if (isConnected()) {
+            listenRemote(object, name, configurationListener);
+        } else {
             String valueFromFailover = FailoverStorage.get(name);
             if (isNull(valueFromFailover)) {
                 throw new ConfigurationNotFoundException(format("Cannot connect zookeeper, and cannot found property %s from either memory cache file or disaster recovery file, consider adding it into disaster recovery file", name));
@@ -63,6 +69,9 @@ abstract class ConfigurationAccessor implements ConfigurationOperations {
 
             ZookeeperStorage.setIfAbsent(name, valueFromFailover);
             configurationListener.configChanged(valueFromFailover);
+
+            ConfigListenerRecord record = new ConfigListenerRecord(object, name, configurationListener);
+            configListenerRecordsQueue.offer(record);
         }
     }
 

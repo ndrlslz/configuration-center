@@ -2,7 +2,10 @@ package com.ndrlslz.configuration.center.sdk;
 
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
+import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
 import com.ndrlslz.configuration.center.core.client.ZookeeperClient;
+import com.ndrlslz.configuration.center.core.exception.ConfigurationCenterException;
+import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
 import com.ndrlslz.configuration.center.sdk.client.ConfigurationTemplate;
 import com.ndrlslz.configuration.center.sdk.failover.ConfigurationFailover;
 import org.apache.curator.test.TestingServer;
@@ -21,21 +24,22 @@ import static java.util.Objects.nonNull;
 
 public class IntegrationFailoverTestBase {
     private static final Path FAILOVER_PATH = Paths.get("configuration-center-failover");
-    private static final String APPLICATION = "customer-api";
-    private static final String ENVIRONMENT = "dev";
-    private static TestingServer testingServer;
+    static final String APPLICATION = "customer-api";
+    static final String ENVIRONMENT = "dev";
+    static TestingServer testingServer;
     ConfigurationTemplate configurationTemplate;
+    ConfigurationCenterClient configurationCenterClient;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         testingServer = new TestingServer(9999);
-        testingServer.stop();
         decreaseFirstConnectionTimeoutForFastTest();
     }
 
     @Before
     public void setUp() throws Exception {
         setupFailoverFlag();
+        testingServer.stop();
 
         if (Files.exists(FAILOVER_PATH)) {
             MoreFiles.deleteRecursively(FAILOVER_PATH, RecursiveDeleteOption.ALLOW_INSECURE);
@@ -43,9 +47,13 @@ public class IntegrationFailoverTestBase {
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() throws IOException, ConfigurationCenterException {
         if (nonNull(configurationTemplate)) {
             configurationTemplate.close();
+        }
+
+        if (nonNull(configurationCenterClient) && configurationCenterClient.isConnected()) {
+            configurationCenterClient.deleteApplication(APPLICATION);
         }
 
         if (Files.exists(FAILOVER_PATH)) {
@@ -58,6 +66,14 @@ public class IntegrationFailoverTestBase {
                 .connectionString(testingServer.getConnectString())
                 .application(APPLICATION)
                 .environment(ENVIRONMENT)
+                .build();
+    }
+
+    void createConfigurationCenterClient() throws FirstConnectionTimeoutException {
+        configurationCenterClient = new ConfigurationCenterClient.Builder()
+                .connectionString(testingServer.getConnectString())
+                .sessionTimeoutMs(10000)
+                .connectionTimeoutMs(10000)
                 .build();
     }
 

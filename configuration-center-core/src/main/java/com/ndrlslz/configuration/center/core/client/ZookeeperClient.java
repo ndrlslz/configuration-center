@@ -8,6 +8,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
@@ -37,6 +38,10 @@ public class ZookeeperClient {
 
     private ZookeeperClient(CuratorFramework curatorFramework) {
         this.curatorFramework = curatorFramework;
+    }
+
+    public void listenConnectionState(ConnectionStateListener connectionStateListener) {
+        curatorFramework.getConnectionStateListenable().addListener(connectionStateListener);
     }
 
     public boolean isConnected() {

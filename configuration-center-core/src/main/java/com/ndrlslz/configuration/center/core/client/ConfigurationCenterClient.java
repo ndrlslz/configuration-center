@@ -8,6 +8,7 @@ import com.ndrlslz.configuration.center.core.model.Node;
 import com.ndrlslz.configuration.center.core.model.Page;
 import com.ndrlslz.configuration.center.core.model.Pagination;
 import io.reactivex.Flowable;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,10 @@ public class ConfigurationCenterClient {
 
     public boolean isConnected() {
         return zookeeperClient.isConnected();
+    }
+
+    public void listenConnectionState(ConnectionStateListener connectionStateListener) {
+        zookeeperClient.listenConnectionState(connectionStateListener);
     }
 
     public void close() {
