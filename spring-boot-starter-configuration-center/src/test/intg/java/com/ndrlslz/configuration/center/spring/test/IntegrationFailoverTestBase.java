@@ -5,6 +5,7 @@ import com.google.common.io.RecursiveDeleteOption;
 import com.ndrlslz.configuration.center.core.client.ConfigurationCenterClient;
 import com.ndrlslz.configuration.center.core.client.ZookeeperClient;
 import com.ndrlslz.configuration.center.core.exception.FirstConnectionTimeoutException;
+import com.ndrlslz.configuration.center.sdk.failover.ConfigurationFailover;
 import com.ndrlslz.configuration.center.spring.app.TestApplication;
 import com.ndrlslz.configuration.center.spring.utils.DisasterRecoveryFileBuilder;
 import io.restassured.RestAssured;
@@ -25,7 +26,6 @@ import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
@@ -51,15 +51,9 @@ public abstract class IntegrationFailoverTestBase implements InitializingBean {
     @BeforeClass
     public static void beforeClass() throws Exception {
         testingServer = new TestingServer(6666);
-
-        createConfigurationCenterClient();
-        configurationCenterClient.createApplication(APPLICATION);
-        configurationCenterClient.createEnvironment(APPLICATION, ENVIRONMENT);
-        configurationCenterClient.createProperty(APPLICATION, ENVIRONMENT, "name", "Nick");
-        configurationCenterClient.createProperty(APPLICATION, ENVIRONMENT, "emailAddress", "tom@gmail.com");
-
         testingServer.stop();
         decreaseFirstConnectionTimeoutForFastTest();
+        setupFailoverFlag();
 
         if (Files.exists(FAILOVER_PATH)) {
             MoreFiles.deleteRecursively(FAILOVER_PATH, RecursiveDeleteOption.ALLOW_INSECURE);
@@ -67,14 +61,12 @@ public abstract class IntegrationFailoverTestBase implements InitializingBean {
 
         new DisasterRecoveryFileBuilder()
                 .property("name", "Tom")
-                .property("age", "23")
+                .property("age", "24")
                 .property("address", "TianFu Street")
                 .property("javaer", "true")
                 .property("email", "tom@gmail.com")
                 .property("app", "customer-api")
                 .create();
-
-        TimeUnit.SECONDS.sleep(30);
     }
 
     @Before
@@ -111,4 +103,10 @@ public abstract class IntegrationFailoverTestBase implements InitializingBean {
         field.set(null, 2);
     }
 
+    private static void setupFailoverFlag() throws NoSuchFieldException, IllegalAccessException {
+        Field field = ConfigurationFailover.class.getDeclaredField("FAILOVER");
+        field.setAccessible(true);
+
+        field.set(null, true);
+    }
 }
