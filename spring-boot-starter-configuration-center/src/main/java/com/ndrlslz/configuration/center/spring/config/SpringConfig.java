@@ -1,4 +1,4 @@
-package com.ndrlslz.configuration.center.spring.model;
+package com.ndrlslz.configuration.center.spring.config;
 
 import com.ndrlslz.configuration.center.spring.util.TypeConverter;
 import org.slf4j.Logger;

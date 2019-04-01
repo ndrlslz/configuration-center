@@ -27,7 +27,7 @@ public class ApplicationIntegrationFailoverTest extends IntegrationFailoverTestB
         createConfigurationCenterClient();
         createZookeeperData();
 
-        TimeUnit.MILLISECONDS.sleep(500);
+        TimeUnit.SECONDS.sleep(1);
 
         when()
                 .get("/coder")

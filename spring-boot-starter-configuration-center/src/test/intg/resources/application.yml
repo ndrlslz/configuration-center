@@ -2,3 +2,5 @@ configuration-center:
   application: "customer-api"
   environment: "dev"
   connectionString: "localhost:6666"
+  sessionTimeoutMs: 5000
+  connectionTimeoutMs: 5000

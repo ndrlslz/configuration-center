@@ -93,7 +93,7 @@ jacocoTestReport {
 
     afterEvaluate {
         classDirectories = files(classDirectories.files.collect {
-            fileTree(dir: it, excludes: [])
+            fileTree(dir: it, excludes: ['com/ndrlslz/configuration/center/spring/exception'])
         })
     }
 }
@@ -104,7 +104,7 @@ jacocoTestCoverageVerification {
 
     afterEvaluate {
         classDirectories = files(classDirectories.files.collect {
-            fileTree(dir: it, excludes: [])
+            fileTree(dir: it, excludes: ['com/ndrlslz/configuration/center/spring/exception'])
         })
     }
 
@@ -112,12 +112,12 @@ jacocoTestCoverageVerification {
         rule {
             limit {
                 counter = 'BRANCH'
-                minimum = 0.00
+                minimum = 0.60
             }
 
             limit {
                 counter = 'LINE'
-                minimum = 0.00
+                minimum = 0.80
             }
         }
     }

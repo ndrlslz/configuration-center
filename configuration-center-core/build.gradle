@@ -68,8 +68,7 @@ jacocoTestReport {
         classDirectories = files(classDirectories.files.collect {
             fileTree(dir: it,
                     excludes: ['com/ndrlslz/configuration/center/core/model',
-                               'com/ndrlslz/configuration/center/core/exception',
-                               'spike']
+                               'com/ndrlslz/configuration/center/core/exception']
             )
         })
     }
@@ -83,8 +82,7 @@ jacocoTestCoverageVerification {
         classDirectories = files(classDirectories.files.collect {
             fileTree(dir: it,
                     excludes: ['com/ndrlslz/configuration/center/core/model',
-                               'com/ndrlslz/configuration/center/core/exception',
-                               'spike']
+                               'com/ndrlslz/configuration/center/core/exception']
             )
         })
     }

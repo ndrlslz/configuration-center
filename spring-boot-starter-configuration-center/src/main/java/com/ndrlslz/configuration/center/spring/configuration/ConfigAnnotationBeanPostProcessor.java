@@ -5,7 +5,7 @@ import com.ndrlslz.configuration.center.spring.annotation.Config;
 import com.ndrlslz.configuration.center.spring.config.AutoUpdateRegister;
 import com.ndrlslz.configuration.center.spring.exception.ConfigValueMissingException;
 import com.ndrlslz.configuration.center.spring.exception.ConfigurationCenterSpringException;
-import com.ndrlslz.configuration.center.spring.model.SpringConfig;
+import com.ndrlslz.configuration.center.spring.config.SpringConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;

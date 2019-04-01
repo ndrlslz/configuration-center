@@ -2,11 +2,12 @@ package com.ndrlslz.configuration.center.spring.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.ndrlslz.configuration.center.sdk.client.ConfigurationTemplate;
-import com.ndrlslz.configuration.center.spring.model.SpringConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.ref.WeakReference;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -38,12 +39,20 @@ public class AutoUpdateRegister {
     }
 
     private void cleanSpringConfig() {
-        autoUpdateSpringConfigMap.forEach((beanRef, springConfig) -> {
-            Object bean = beanRef.get();
-            if (Objects.isNull(bean)) {
-                configurationTemplate.unListen(beanRef, springConfig.getPropertyName());
-                autoUpdateSpringConfigMap.remove(beanRef);
+        if (configurationTemplate.isConnected()) {
+            Iterator<Map.Entry<WeakReference<?>, SpringConfig>> iterator = autoUpdateSpringConfigMap.entrySet().iterator();
+
+            while (iterator.hasNext()) {
+                Map.Entry<WeakReference<?>, SpringConfig> entry = iterator.next();
+                WeakReference<?> beanRef = entry.getKey();
+                SpringConfig springConfig = entry.getValue();
+
+                Object bean = beanRef.get();
+                if (Objects.isNull(bean)) {
+                    configurationTemplate.unListen(beanRef, springConfig.getPropertyName());
+                    iterator.remove();
+                }
             }
-        });
+        }
     }
 }
