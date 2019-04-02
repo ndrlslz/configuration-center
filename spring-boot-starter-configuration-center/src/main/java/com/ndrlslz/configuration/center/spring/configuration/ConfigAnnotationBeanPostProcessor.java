@@ -3,9 +3,9 @@ package com.ndrlslz.configuration.center.spring.configuration;
 import com.ndrlslz.configuration.center.sdk.client.ConfigurationTemplate;
 import com.ndrlslz.configuration.center.spring.annotation.Config;
 import com.ndrlslz.configuration.center.spring.config.AutoUpdateRegister;
+import com.ndrlslz.configuration.center.spring.config.SpringConfig;
 import com.ndrlslz.configuration.center.spring.exception.ConfigValueMissingException;
 import com.ndrlslz.configuration.center.spring.exception.ConfigurationCenterSpringException;
-import com.ndrlslz.configuration.center.spring.config.SpringConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -186,29 +186,33 @@ public class ConfigAnnotationBeanPostProcessor extends InstantiationAwareBeanPos
         protected void inject(Object bean, String beanName, PropertyValues pvs) {
             Method method = (Method) this.member;
             Parameter[] parameters = method.getParameters();
-
             Config annotation = method.getAnnotation(configAnnotationType);
-
             String propertyName = annotation.value();
 
-            if (propertyName.isEmpty()) {
-                throw new ConfigValueMissingException(String.format("@Config value cannot be null for method %s.%s",
-                        bean.getClass().getName(), method.getName()));
-            }
-
-            if (parameters.length != 1) {
-                throw new ConfigurationCenterSpringException(String.format("since apply @Config, should only have one parameter for method %s.%s",
-                        bean.getClass().getName(), method.getName()));
-            }
+            makeSureConfigValueIsSpecified(bean, method, propertyName);
+            makeSureOnlyHaveOneParameter(bean, method, parameters);
 
             SpringConfig springConfig = new SpringConfig(bean, method, parameters[0].getType(), propertyName);
-
             String propertyValue = configurationTemplate.get(propertyName);
 
             springConfig.updateValue(propertyValue);
 
             if (annotation.refresh()) {
                 autoUpdateRegister.register(springConfig);
+            }
+        }
+
+        private void makeSureConfigValueIsSpecified(Object bean, Method method, String propertyName) {
+            if (propertyName.isEmpty()) {
+                throw new ConfigValueMissingException(String.format("@Config value cannot be null for method %s.%s",
+                        bean.getClass().getName(), method.getName()));
+            }
+        }
+
+        private void makeSureOnlyHaveOneParameter(Object bean, Method method, Parameter[] parameters) {
+            if (parameters.length != 1) {
+                throw new ConfigurationCenterSpringException(String.format("since apply @Config, should only have one parameter for method %s.%s",
+                        bean.getClass().getName(), method.getName()));
             }
         }
     }

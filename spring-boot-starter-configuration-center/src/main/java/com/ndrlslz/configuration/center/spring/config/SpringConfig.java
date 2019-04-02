@@ -31,7 +31,6 @@ public class SpringConfig {
         this.method = method;
         this.methodParameterType = methodParameterType;
         this.propertyName = propertyName;
-
     }
 
     public WeakReference<Object> getBeanRef() {

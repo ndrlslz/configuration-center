@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -40,10 +40,10 @@ public class AutoUpdateRegister {
 
     private void cleanSpringConfig() {
         if (configurationTemplate.isConnected()) {
-            Iterator<Map.Entry<WeakReference<?>, SpringConfig>> iterator = autoUpdateSpringConfigMap.entrySet().iterator();
+            Iterator<Entry<WeakReference<?>, SpringConfig>> iterator = autoUpdateSpringConfigMap.entrySet().iterator();
 
             while (iterator.hasNext()) {
-                Map.Entry<WeakReference<?>, SpringConfig> entry = iterator.next();
+                Entry<WeakReference<?>, SpringConfig> entry = iterator.next();
                 WeakReference<?> beanRef = entry.getKey();
                 SpringConfig springConfig = entry.getValue();
 
