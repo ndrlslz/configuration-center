@@ -1,4 +1,5 @@
 ## configuration-center
+
 configuration center is a configuration management center based on Zookeeper.
 It includes the following components.
 
@@ -28,7 +29,7 @@ create /configuration-center/customer-api/dev/name "Tom"
 ```
 
 As you can see, we created a config `name=Tom` for `customer-api` in `dev` environment.
-The following documentation will show you how to get and listen config for non spring application & spring application.
+The following documentation will show you how to get and listen config for non spring application & spring boot application.
 
 ### Non Spring Application
 1. import `configuration-center-sdk` library
@@ -55,7 +56,7 @@ configurationTemplate.listen(this, "name", value -> {
 });    
 ```
 
-### Spring Application
+### Spring Boot Application
 1. import `spring-boot-starter-configuration-center` library
 2. add configuration center associated config in application.yml
 ```
@@ -92,3 +93,22 @@ public class TestController {
     }
 }
 ```
+
+## Design Documentation
+
+### Configuration Struct
+Basically configuration struct in zookeeper consists of four layers.
+Top layer is configuration-center namespace, the second layer is different applications, 
+the third layer is application's different environment, the last layer is the detailed properties in specific environment.
+ 
+![configuration-struct](./images/configuration-struct.png)
+
+
+### Failover
+Configuration center has a complete failover strategy. it does not impact the application even if configuration center is down. 
+
+1. local memory cache, configuration from zookeeper would be stored in memory.  
+2. local cache folder, application would persistent the memory data into file. 
+when application lost connection with configuration center and application is restarted, since there is no memory cache, application can read config from local cache file.
+3. local failover folder, normally failover folder is empty. when application has been lost connection with configuration center for a long time, and configurations has been changed a lot, config in local cache file is out of date.
+in this case, it's able to add config manually in local failover file. and application will ignore cache folder, only read config from failover folder instead.
