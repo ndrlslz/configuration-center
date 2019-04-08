@@ -7,9 +7,9 @@ It includes the following components.
 
 `configuration-center-sdk` provide a Java SDK tool to get/listen config, which can be used for non-spring application.
 
-`spring-boot-starter-configuration-center` provide a library that integrated with Spring, which can be used for Spring application.
+`spring-boot-starter-configuration-center` provide a library that integrated with Spring, which can be used for Spring boot application.
 
-There should be a project `configuration-center-ui` to provide a interface to operate the config easily. But sorry, I am not familiar with front-end development.
+There should be a project `configuration-center-ui` to provide a ui interface to operate the config easily. But sorry, I am not familiar with front-end development.
  
 ## QuickStart
 
@@ -98,8 +98,9 @@ public class TestController {
 
 ### Configuration Struct
 Basically configuration struct in zookeeper consists of four layers.
+
 Top layer is configuration-center namespace, the second layer is different applications, 
-the third layer is application's different environment, the last layer is the detailed properties in specific environment.
+the third layer is application's different environments, the last layer is detailed properties in specific environment.
  
 ![configuration-struct](./images/configuration-struct.png)
 
@@ -107,8 +108,8 @@ the third layer is application's different environment, the last layer is the de
 ### Failover
 Configuration center has a complete failover strategy. it does not impact the application even if configuration center is down. 
 
-1. local memory cache, configuration from zookeeper would be stored in memory.  
-2. local cache folder, application would persistent the memory data into file. 
+1. **local memory cache**, configuration from zookeeper would be stored in memory.  
+2. **local cache folder**, application would persistent the memory data into file. 
 when application lost connection with configuration center and application is restarted, since there is no memory cache, application can read config from local cache file.
-3. local failover folder, normally failover folder is empty. when application has been lost connection with configuration center for a long time, and configurations has been changed a lot, config in local cache file is out of date.
+3. **local failover folder**, normally failover folder is empty. when application has been lost connection with configuration center for a long time, and configurations has been changed a lot, config in local cache file is out of date.
 in this case, it's able to add config manually in local failover file. and application will ignore cache folder, only read config from failover folder instead.
